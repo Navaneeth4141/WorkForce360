@@ -44,9 +44,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       {/* Header section with branding logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800 bg-slate-950">
         <div className="flex items-center space-x-3 overflow-hidden">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg text-white font-bold text-lg shrink-0">
-            W360
-          </div>
+          <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-lg shrink-0" />
           {isOpen && (
             <span className="text-sm font-bold tracking-wider text-white uppercase whitespace-nowrap">
               WorkForce360

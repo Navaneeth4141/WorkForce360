@@ -22,9 +22,7 @@ export default function WorkerNavbar() {
       {/* Top Header navbar for mobile worker portal */}
       <header className="fixed top-0 left-0 z-30 flex items-center justify-between w-full h-14 px-4 bg-slate-900 text-white shadow-md md:hidden">
         <div className="flex items-center space-x-2">
-          <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded text-white font-bold text-sm">
-            W360
-          </div>
+          <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain rounded" />
           <span className="text-sm font-bold tracking-wider uppercase">Worker Hub</span>
         </div>
         <button
@@ -61,9 +59,7 @@ export default function WorkerNavbar() {
       <aside className="fixed top-0 left-0 z-30 hidden md:flex flex-col justify-between w-64 h-screen bg-slate-900 border-r border-slate-800 text-slate-300">
         <div>
           <div className="flex items-center space-x-2 h-16 px-6 bg-slate-950 border-b border-slate-800">
-            <div className="flex items-center justify-center w-9 h-9 bg-blue-600 rounded text-white font-bold">
-              W360
-            </div>
+            <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain rounded" />
             <span className="text-sm font-bold tracking-wider text-white uppercase">Worker Portal</span>
           </div>
           <ul className="space-y-1 p-4">

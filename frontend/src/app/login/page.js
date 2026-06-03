@@ -68,9 +68,7 @@ export default function LoginPage() {
         
         {/* Branding Title */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl text-white font-bold text-xl mb-3 shadow-md">
-            W360
-          </div>
+          <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain rounded-xl mb-3 shadow-md" />
           <h2 className="text-2xl font-bold text-slate-800">Welcome Back</h2>
           <p className="text-sm text-slate-500 mt-1">Sign in to manage your workforce portal</p>
         </div>
