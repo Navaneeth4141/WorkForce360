@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment Files
+.env
+.env.local
+.env.production
+.env.development
+
+# Database
+*.db
+*.db-journal
+
+# Logs
+*.log
+logs/
+
+# Build Files
+dist/
+build/
+.next/
+out/
+
+# Coverage
+coverage/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Vercel
+.vercel/
+
+# Prisma
+prisma/dev.db
+
+# Generated
+*.tsbuildinfo
+
+npm-cache/
+**/npm-cache/

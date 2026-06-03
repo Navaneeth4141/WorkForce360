@@ -1,0 +1,461 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User model for Admin and Worker accounts
+model User {
+  id            String        @id @default(uuid())
+  employeeId    String        @unique @map("employee_id") // Maps to employee_code in Employee model
+  passwordHash  String        @map("password_hash")
+  role          String        @default("WORKER")          // "ADMIN" | "WORKER"
+  lastLogin     DateTime?     @map("last_login")
+  isActive      Boolean       @default(true) @map("is_active")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  createdBy     String?       @map("created_by")
+  updatedBy     String?       @map("updated_by")
+
+  sessions      UserSession[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+// Session tracker for JWT authorization
+model UserSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+// Employee designations
+model Designation {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  createdBy   String?    @map("created_by")
+  updatedBy   String?    @map("updated_by")
+
+  employees   Employee[]
+
+  @@map("designations")
+}
+
+// Categories of expenses
+model ExpenseCategory {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
+
+  expenses    Expense[]
+
+  @@map("expense_categories")
+}
+
+// Main employee profile table
+model Employee {
+  id                String            @id @default(uuid())
+  employeeCode      String            @unique @map("employee_code") // matches User.employeeId
+  fullName          String            @map("full_name")
+  age               Int
+  dob               DateTime
+  nationality       String
+  gender            String
+  religion          String
+  phoneNumber       String            @map("phone_number")
+  email             String
+  presentAddress    String            @map("present_address")
+  permanentAddress  String            @map("permanent_address")
+  aadharNumber      String            @map("aadhar_number")
+  pfNumber          String?           @map("pf_number")
+  esicNumber        String?           @map("esic_number")
+  joiningDate       DateTime          @map("joining_date")
+  designationId     String            @map("designation_id")
+  status            String            @default("ACTIVE")          // "ACTIVE" | "INACTIVE" | "RESIGNED" | "TERMINATED"
+  currentContractId String?           @map("current_contract_id")
+  isActive          Boolean           @default(true) @map("is_active")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  createdBy         String?           @map("created_by")
+  updatedBy         String?           @map("updated_by")
+
+  designation       Designation       @relation(fields: [designationId], references: [id])
+  bankDetails       EmployeeBankDetails?
+  familyMembers     EmployeeFamilyMember[]
+  education         EmployeeEducation[]
+  employmentHistory EmployeeEmploymentHistory[]
+  documents         EmployeeDocument[]
+  salaryStructures  SalaryStructure[]
+  salaryRevisions   SalaryRevision[]
+  attendances       Attendance[]
+  payrollItems      PayrollItem[]
+
+  @@map("employees")
+}
+
+// Employee bank details (1-to-1 with Employee)
+model EmployeeBankDetails {
+  id                String   @id @default(uuid())
+  employeeId        String   @unique @map("employee_id")
+  bankName          String   @map("bank_name")
+  accountHolderName String   @map("account_holder_name")
+  accountNumber     String   @map("account_number")
+  ifscCode          String   @map("ifsc_code")
+  branchName        String   @map("branch_name")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_bank_details")
+}
+
+// Employee family members (1-to-many)
+model EmployeeFamilyMember {
+  id            String   @id @default(uuid())
+  employeeId    String   @map("employee_id")
+  relationship  String            // "FATHER" | "MOTHER" | "SPOUSE" | "CHILD"
+  fullName      String   @map("full_name")
+  occupation    String?
+  dob           DateTime?
+  contactNumber String?  @map("contact_number")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_family_members")
+}
+
+// Employee education record (1-to-many)
+model EmployeeEducation {
+  id             String   @id @default(uuid())
+  employeeId     String   @map("employee_id")
+  qualification  String
+  institution    String
+  specialization String?
+  completionYear Int      @map("completion_year")
+  score          Decimal
+  scoreType      String            // "PERCENTAGE" | "GPA"
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_education")
+}
+
+// Employee employment history (1-to-many)
+model EmployeeEmploymentHistory {
+  id              String   @id @default(uuid())
+  employeeId      String   @map("employee_id")
+  employerName    String   @map("employer_name")
+  designation     String
+  experienceYears Decimal  @map("experience_years")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_employment_history")
+}
+
+// Employee uploaded documents (1-to-many)
+model EmployeeDocument {
+  id            String   @id @default(uuid())
+  employeeId    String   @map("employee_id")
+  documentType  String            // "PHOTO" | "AADHAAR" | "PAN" | "PASSBOOK" | "JOINING_FORM" | "PF" | "ESIC"
+  cloudinaryUrl String   @map("cloudinary_url")
+  uploadedAt    DateTime @default(now()) @map("uploaded_at")
+
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_documents")
+}
+
+// Employee salary structure
+model SalaryStructure {
+  id                    String           @id @default(uuid())
+  employeeId            String           @map("employee_id")
+  fixedGross            Decimal          @map("fixed_gross")
+  teaAllowance          Decimal          @map("tea_allowance")
+  basicPercentage       Decimal          @map("basic_percentage")
+  hraPercentage         Decimal          @map("hra_percentage")
+  conveyancePercentage  Decimal          @map("conveyance_percentage")
+  fixedBasic            Decimal          @map("fixed_basic")
+  fixedHra              Decimal          @map("fixed_hra")
+  fixedConveyance       Decimal          @map("fixed_conveyance")
+  effectiveFrom         DateTime         @map("effective_from")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+  createdBy             String?          @map("created_by")
+  updatedBy             String?          @map("updated_by")
+
+  employee              Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  revisions             SalaryRevision[]
+
+  @@map("salary_structures")
+}
+
+// Salary structure revisions history
+model SalaryRevision {
+  id                String          @id @default(uuid())
+  employeeId        String          @map("employee_id")
+  salaryStructureId String          @map("salary_structure_id")
+  revisionDate      DateTime        @map("revision_date")
+  remarks           String?
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  employee          Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
+
+  @@map("salary_revisions")
+}
+
+// Client company details
+model Client {
+  id            String     @id @default(uuid())
+  companyName   String     @map("company_name")
+  gstNumber     String?    @map("gst_number")
+  panNumber     String?    @map("pan_number")
+  address       String?
+  contactPerson String?    @map("contact_person")
+  phoneNumber   String?    @map("phone_number")
+  email         String?
+  isActive      Boolean    @default(true) @map("is_active")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  createdBy     String?    @map("created_by")
+  updatedBy     String?    @map("updated_by")
+
+  contracts     Contract[]
+
+  @@map("clients")
+}
+
+// Client contracts mapping service charges and taxes
+model Contract {
+  id                      String         @id @default(uuid())
+  clientId                String         @map("client_id")
+  contractName            String         @map("contract_name")
+  startDate               DateTime       @map("start_date")
+  endDate                 DateTime       @map("end_date")
+  serviceChargePercentage Decimal        @map("service_charge_percentage")
+  cgstPercentage          Decimal        @map("cgst_percentage")
+  sgstPercentage          Decimal        @map("sgst_percentage")
+  termsConditions         String?        @map("terms_conditions")
+  status                  String         @default("DRAFT")          // "DRAFT" | "ACTIVE" | "EXPIRED" | "TERMINATED"
+  isActive                Boolean        @default(true) @map("is_active")
+  createdAt               DateTime       @default(now()) @map("created_at")
+  updatedAt               DateTime       @updatedAt @map("updated_at")
+  createdBy               String?        @map("created_by")
+  updatedBy               String?        @map("updated_by")
+
+  client                  Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoices                InvoiceBatch[]
+
+  @@map("contracts")
+}
+
+// Daily attendance logs
+model Attendance {
+  id               String   @id @default(uuid())
+  employeeId       String   @map("employee_id")
+  attendanceDate   DateTime @map("attendance_date")
+  attendanceStatus String            // "PRESENT" | "HALF_DAY" | "ABSENT"
+  overtimeHours    Decimal  @map("overtime_hours")
+  remarks          String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  createdBy        String?  @map("created_by")
+  updatedBy        String?  @map("updated_by")
+
+  employee         Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, attendanceDate])
+  @@map("attendance")
+}
+
+// Monthly payroll run batches
+model PayrollBatch {
+  id                 String        @id @default(uuid())
+  payrollMonth       Int           @map("payroll_month") // 1 to 12
+  payrollYear        Int           @map("payroll_year")
+  totalPayrollCost   Decimal       @map("total_payroll_cost")
+  totalContributions Decimal       @map("total_contributions")
+  payrollGeneratedAt DateTime      @default(now()) @map("payroll_generated_at")
+  isFrozen           Boolean       @default(false) @map("is_frozen")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  createdBy          String?       @map("created_by")
+  updatedBy          String?       @map("updated_by")
+
+  payrollItems       PayrollItem[]
+  invoices           InvoiceBatch[]
+
+  @@unique([payrollMonth, payrollYear])
+  @@map("payroll_batches")
+}
+
+// Individual employee payroll records
+model PayrollItem {
+  id                 String       @id @default(uuid())
+  payrollBatchId     String       @map("payroll_batch_id")
+  employeeId         String       @map("employee_id")
+  totalDays          Int          @map("total_days")
+  payableDays        Decimal      @map("payable_days")
+  absentDays         Decimal      @map("absent_days")
+  overtimeHours      Decimal      @map("overtime_hours")
+  earnedBasic        Decimal      @map("earned_basic")
+  earnedHra          Decimal      @map("earned_hra")
+  earnedConveyance   Decimal      @map("earned_conveyance")
+  earnedTeaAllowance Decimal      @map("earned_tea_allowance")
+  overtimeWages      Decimal      @map("overtime_wages")
+  specialAllowance   Decimal      @map("special_allowance")
+  grossPay           Decimal      @map("gross_pay")
+  pf                 Decimal
+  esic               Decimal
+  professionalTax    Decimal      @map("professional_tax")
+  netSalary          Decimal      @map("net_salary")
+  employerPf         Decimal      @map("employer_pf")
+  employerPfAdmin    Decimal      @map("employer_pf_admin")
+  employerEsic       Decimal      @map("employer_esic")
+  totalCtc           Decimal      @map("total_ctc")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  payrollBatch       PayrollBatch @relation(fields: [payrollBatchId], references: [id], onDelete: Cascade)
+  employee           Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payslips           Payslip[]
+
+  @@unique([payrollBatchId, employeeId])
+  @@map("payroll_items")
+}
+
+// PDF Payslip generation mapping
+model Payslip {
+  id            String      @id @default(uuid())
+  payrollItemId String      @map("payroll_item_id")
+  pdfUrl        String      @map("pdf_url")
+  generatedAt   DateTime    @default(now()) @map("generated_at")
+
+  payrollItem   PayrollItem @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+
+  @@map("payslips")
+}
+
+// Monthly client invoices
+model InvoiceBatch {
+  id                 String        @id @default(uuid())
+  contractId         String        @map("contract_id")
+  payrollBatchId     String        @map("payroll_batch_id")
+  invoiceNumber      String        @unique @map("invoice_number")
+  invoiceDate        DateTime      @map("invoice_date")
+  totalInvoiceAmount Decimal       @map("total_invoice_amount")
+  pdfUrl             String?       @map("pdf_url")
+  isFrozen           Boolean       @default(false) @map("is_frozen")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  createdBy          String?       @map("created_by")
+  updatedBy          String?       @map("updated_by")
+
+  contract           Contract      @relation(fields: [contractId], references: [id])
+  payrollBatch       PayrollBatch  @relation(fields: [payrollBatchId], references: [id])
+  invoiceItems       InvoiceItem[]
+
+  @@map("invoice_batches")
+}
+
+// Breakdown lines of client invoices
+model InvoiceItem {
+  id              String       @id @default(uuid())
+  invoiceBatchId  String       @map("invoice_batch_id")
+  payrollCost     Decimal      @map("payroll_cost")
+  employerPf      Decimal      @map("employer_pf")
+  employerPfAdmin Decimal      @map("employer_pf_admin")
+  employerEsic    Decimal      @map("employer_esic")
+  serviceCharge   Decimal      @map("service_charge")
+  cgstAmount      Decimal      @map("cgst_amount")
+  sgstAmount      Decimal      @map("sgst_amount")
+  totalAmount     Decimal      @map("total_amount")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  invoiceBatch    InvoiceBatch @relation(fields: [invoiceBatchId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+// Corporate expenses logs
+model Expense {
+  id          String          @id @default(uuid())
+  categoryId  String          @map("category_id")
+  expenseName String          @map("expense_name")
+  amount      Decimal
+  expenseDate DateTime        @map("expense_date")
+  description String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  createdBy   String?         @map("created_by")
+  updatedBy   String?         @map("updated_by")
+
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("expenses")
+}
+
+// System/Company settings parameters
+model Setting {
+  id                         String   @id @default(uuid())
+  companyName                String   @map("company_name")
+  companyLogoUrl             String?  @map("company_logo_url")
+  address                    String?
+  phoneNumber                String?  @map("phone_number")
+  email                      String?
+  gstNumber                  String?  @map("gst_number")
+  panNumber                  String?  @map("pan_number")
+  defaultPfPercentage        Decimal  @map("default_pf_percentage")
+  defaultPfAdminPercentage   Decimal  @map("default_pf_admin_percentage")
+  defaultEsicPercentage      Decimal  @map("default_esic_percentage")
+  professionalTaxSlabsJson   String   @map("professional_tax_slabs_json") // Stored as serialized JSON string of slabs
+  maximumOtHoursPerDay       Decimal  @map("maximum_ot_hours_per_day")
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+  updatedBy                  String?  @map("updated_by")
+
+  @@map("settings")
+}
+
+// System audit logs
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
