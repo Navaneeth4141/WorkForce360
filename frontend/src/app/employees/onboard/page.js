@@ -90,15 +90,15 @@ export default function OnboardPage() {
       if (!personal.religion.trim()) {
         errors.religion = 'Religion is required';
       }
-      if (!personal.phoneNumber.trim()) {
-        errors.phoneNumber = 'Phone number is required';
-      } else if (!/^\d{10}$/.test(personal.phoneNumber.trim())) {
-        errors.phoneNumber = 'Phone number must be exactly 10 digits';
+      if (personal.phoneNumber && personal.phoneNumber.trim()) {
+        if (!/^\d{10}$/.test(personal.phoneNumber.trim())) {
+          errors.phoneNumber = 'Phone number must be exactly 10 digits';
+        }
       }
-      if (!personal.email.trim()) {
-        errors.email = 'Email is required';
-      } else if (!personal.email.includes('@')) {
-        errors.email = 'Email must contain the "@" character';
+      if (personal.email && personal.email.trim()) {
+        if (!personal.email.includes('@')) {
+          errors.email = 'Email must contain the "@" character';
+        }
       }
       if (!personal.joiningDate) {
         errors.joiningDate = 'Joining Date is required';
@@ -113,12 +113,6 @@ export default function OnboardPage() {
       }
       if (!personal.esicNumber || !personal.esicNumber.trim()) {
         errors.esicNumber = 'ESIC Insurance Number is required';
-      }
-      if (!personal.presentAddress || !personal.presentAddress.trim()) {
-        errors.presentAddress = 'Present Address is required';
-      }
-      if (!personal.permanentAddress || !personal.permanentAddress.trim()) {
-        errors.permanentAddress = 'Permanent Address is required';
       }
     } else if (step === 5) {
       if (!salary.fixedGross || parseFloat(salary.fixedGross) <= 0) {
@@ -435,7 +429,7 @@ export default function OnboardPage() {
                    </div>
  
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Phone Number *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">Phone Number (Optional)</label>
                      <input
                        type="text"
                        value={personal.phoneNumber}
@@ -446,7 +440,7 @@ export default function OnboardPage() {
                    </div>
  
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Email *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">Email (Optional)</label>
                      <input
                        type="email"
                        value={personal.email}
@@ -503,7 +497,7 @@ export default function OnboardPage() {
  
                  <div className="grid grid-cols-1 gap-4 mt-4">
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Present Address *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">Present Address (Optional)</label>
                      <textarea
                        rows={2}
                        value={personal.presentAddress}
@@ -513,7 +507,7 @@ export default function OnboardPage() {
                      {formErrors.presentAddress && <p className="text-red-500 text-xs mt-1">{formErrors.presentAddress}</p>}
                    </div>
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Permanent Address *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">Permanent Address (Optional)</label>
                      <textarea
                        rows={2}
                        value={personal.permanentAddress}

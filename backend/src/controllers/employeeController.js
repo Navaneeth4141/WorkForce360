@@ -38,7 +38,7 @@ export async function createEmployee(req, res) {
   } = req.body;
 
   // Validation: Check required personal info
-  if (!fullName || !dob || !phoneNumber || !email || !designationId || !joiningDate || !aadharNumber) {
+  if (!fullName || !dob || !designationId || !joiningDate || !aadharNumber) {
     return res.status(400).json({ error: { message: 'Missing required employee personal information' } });
   }
 

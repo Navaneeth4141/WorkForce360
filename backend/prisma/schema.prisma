@@ -82,10 +82,10 @@ model Employee {
   nationality       String
   gender            String
   religion          String
-  phoneNumber       String            @map("phone_number")
-  email             String
-  presentAddress    String            @map("present_address")
-  permanentAddress  String            @map("permanent_address")
+  phoneNumber       String?           @map("phone_number")
+  email             String?
+  presentAddress    String?           @map("present_address")
+  permanentAddress  String?           @map("permanent_address")
   aadharNumber      String            @map("aadhar_number")
   pfNumber          String?           @map("pf_number")
   esicNumber        String?           @map("esic_number")

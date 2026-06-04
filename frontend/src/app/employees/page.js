@@ -146,6 +146,21 @@ export default function EmployeesPage() {
   // Submit edit form
   const handleUpdateEmployee = async (e) => {
     e.preventDefault();
+
+    // Validate optional phone number and email formats if provided
+    if (editForm.phoneNumber && editForm.phoneNumber.trim()) {
+      if (!/^\d{10}$/.test(editForm.phoneNumber.trim())) {
+        alert('Phone number must be exactly 10 digits');
+        return;
+      }
+    }
+
+    if (editForm.email && editForm.email.trim()) {
+      if (!editForm.email.includes('@')) {
+        alert('Email must contain the "@" character');
+        return;
+      }
+    }
     
     // Check if salary parameters are provided and validate percentage sum to 100%
     if (editForm.fixedGross !== '') {
@@ -608,20 +623,18 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Phone Number *</label>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Phone Number (Optional)</label>
                       <input
                         type="text"
-                        required
                         value={editForm.phoneNumber}
                         onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Email *</label>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Email (Optional)</label>
                       <input
                         type="email"
-                        required
                         value={editForm.email}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
