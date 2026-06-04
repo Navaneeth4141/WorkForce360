@@ -80,10 +80,22 @@ export default function AttendancePage() {
       setErrorMsg('');
       setIsLocked(false);
 
-      // 1. Fetch active employees
-      const empRes = await API.get('/employees?status=ACTIVE');
+      // 1. Fetch active employees (limit 1000 to cover all active workers)
+      const empRes = await API.get('/employees?status=ACTIVE&limit=1000');
       const activeEmps = empRes.data.employees;
-      setEmployees(activeEmps);
+
+      // Filter out employees who have not joined yet on this target selectedDate
+      const normalizeDate = (dVal) => {
+        const d = new Date(dVal);
+        return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+      };
+
+      const targetDateUtc = normalizeDate(selectedDate);
+      const filteredEmps = activeEmps.filter((emp) => {
+        const joinDateUtc = normalizeDate(emp.joiningDate);
+        return joinDateUtc <= targetDateUtc;
+      });
+      setEmployees(filteredEmps);
 
       // 2. Check if payroll is already frozen for the month of the selected date
       const dateObj = new Date(selectedDate);
@@ -103,7 +115,7 @@ export default function AttendancePage() {
 
       // 4. Map logs to local state
       const initialRecords = {};
-      activeEmps.forEach((emp) => {
+      filteredEmps.forEach((emp) => {
         const matchingLog = logs.find((l) => l.employeeId === emp.id);
         initialRecords[emp.id] = {
           attendanceStatus: matchingLog ? matchingLog.attendanceStatus : 'PRESENT',
@@ -128,8 +140,8 @@ export default function AttendancePage() {
       setSuccessMsg('');
       setErrorMsg('');
 
-      // 1. Fetch active employees if not fetched
-      const empRes = await API.get('/employees?status=ACTIVE');
+      // 1. Fetch active employees if not fetched (limit 1000 to cover all active workers)
+      const empRes = await API.get('/employees?status=ACTIVE&limit=1000');
       setEmployees(empRes.data.employees);
 
       // 2. Compute date bounds for the selected month
@@ -530,10 +542,24 @@ export default function AttendancePage() {
                             const ot = log ? parseFloat(log.overtimeHours) : 0.0;
                             const remarks = log ? log.remarks : '';
 
+                            const dayStr = String(day).padStart(2, '0');
+                            const monthStr = String(regMonth).padStart(2, '0');
+                            const currentDateStr = `${regYear}-${monthStr}-${dayStr}`;
+
+                            const normalizeDate = (dVal) => {
+                              const d = new Date(dVal);
+                              return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+                            };
+                            
+                            const isBeforeJoining = normalizeDate(currentDateStr) < normalizeDate(emp.joiningDate);
+
                             let badgeColor = 'bg-slate-100 text-slate-400 border border-transparent';
                             let char = '-';
 
-                            if (status === 'PRESENT') {
+                            if (isBeforeJoining) {
+                              badgeColor = 'bg-slate-50/70 text-slate-300 border border-transparent cursor-not-allowed';
+                              char = 'N/A';
+                            } else if (status === 'PRESENT') {
                               badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                               char = 'P';
                             } else if (status === 'HALF_DAY') {
@@ -548,7 +574,7 @@ export default function AttendancePage() {
                               <td 
                                 key={day} 
                                 className="p-1 text-center border-r border-slate-100"
-                                title={log ? `Date: ${day}/${regMonth}, Status: ${status}${ot > 0 ? `, OT: +${ot} hrs` : ''}${remarks ? `, Note: ${remarks}` : ''}` : `No entry for day ${day}`}
+                                title={isBeforeJoining ? 'Employee not joined yet' : (log ? `Date: ${day}/${regMonth}, Status: ${status}${ot > 0 ? `, OT: +${ot} hrs` : ''}${remarks ? `, Note: ${remarks}` : ''}` : `No entry for day ${day}`)}
                               >
                                 <span className={`inline-flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-extrabold ${badgeColor}`}>
                                   {char}
@@ -584,6 +610,7 @@ export default function AttendancePage() {
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-full mr-1.5"></span> P = Present (1.0)</span>
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-amber-500 rounded-full mr-1.5"></span> H = Half Day (0.5)</span>
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-red-500 rounded-full mr-1.5"></span> A = Absent (0.0)</span>
+                <span className="flex items-center"><span className="w-2.5 h-2.5 bg-slate-200 rounded-full mr-1.5"></span> N/A = Not Joined</span>
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-slate-300 rounded-full mr-1.5"></span> - = No record</span>
               </div>
               <span className="italic font-medium">Hover over status letters for details, remarks, and overtime hours.</span>

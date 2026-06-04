@@ -37,13 +37,42 @@ export async function saveAttendance(req, res) {
     const settings = await prisma.setting.findFirst() || { maximumOtHoursPerDay: 8.0 };
     const maxOtLimit = parseFloat(settings.maximumOtHoursPerDay);
 
-    // 3. Process records and validate
+    // 3. Fetch employee details to validate joining date
+    const employeeIds = records.map(r => r.employeeId).filter(Boolean);
+    const dbEmployees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, joiningDate: true, fullName: true, employeeCode: true }
+    });
+    const employeeMap = new Map(dbEmployees.map(e => [e.id, e]));
+
+    // 4. Process records and validate
     const validatedRecords = [];
     for (const rec of records) {
       const { employeeId, attendanceStatus, overtimeHours = 0.0, remarks } = rec;
 
       if (!employeeId || !attendanceStatus) {
         return res.status(400).json({ error: { message: 'Each record must contain employeeId and attendanceStatus' } });
+      }
+
+      const employee = employeeMap.get(employeeId);
+      if (!employee) {
+        return res.status(400).json({ error: { message: `Employee with ID ${employeeId} not found` } });
+      }
+
+      // Check joining date constraint (normalize to UTC midnight)
+      const normalizeToUtcMidnight = (dateVal) => {
+        const d = new Date(dateVal);
+        return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+      };
+
+      if (normalizeToUtcMidnight(dateObj) < normalizeToUtcMidnight(employee.joiningDate)) {
+        const dateStr = dateObj.toISOString().split('T')[0];
+        const joinStr = employee.joiningDate.toISOString().split('T')[0];
+        return res.status(400).json({
+          error: {
+            message: `Cannot mark attendance for ${employee.fullName} (${employee.employeeCode}) on ${dateStr} because it is before their joining date (${joinStr}).`
+          }
+        });
       }
 
       // Allowed status values
