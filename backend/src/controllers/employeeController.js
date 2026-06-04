@@ -28,11 +28,26 @@ export async function createEmployee(req, res) {
 
     // Step 6: Documents
     documents, // Array of { documentType, cloudinaryUrl }
+
+    // Step 5 (Salary details)
+    fixedGross,
+    teaAllowance,
+    basicPercentage,
+    hraPercentage,
+    conveyancePercentage,
   } = req.body;
 
   // Validation: Check required personal info
   if (!fullName || !dob || !phoneNumber || !email || !designationId || !joiningDate || !aadharNumber) {
     return res.status(400).json({ error: { message: 'Missing required employee personal information' } });
+  }
+
+  // Validate salary percentages if provided
+  if (fixedGross !== undefined && fixedGross !== null) {
+    const totalPercentage = parseFloat(basicPercentage || 40) + parseFloat(hraPercentage || 30) + parseFloat(conveyancePercentage || 30);
+    if (Math.abs(totalPercentage - 100) > 0.01) {
+      return res.status(400).json({ error: { message: 'Salary structure percentages must sum up to exactly 100%' } });
+    }
   }
 
   try {
@@ -65,7 +80,37 @@ export async function createEmployee(req, res) {
         },
       });
 
-      // 3. Create Employee Profile record
+      // 3. Calculate salary structures if provided
+      let salaryStructuresCreate = undefined;
+      if (fixedGross !== undefined && fixedGross !== null) {
+        const gross = parseFloat(fixedGross);
+        const tea = parseFloat(teaAllowance || 0);
+        const basicPct = parseFloat(basicPercentage || 40);
+        const hraPct = parseFloat(hraPercentage || 30);
+        const convPct = parseFloat(conveyancePercentage || 30);
+
+        const remainingGross = gross - tea;
+        const fixedBasic = remainingGross * (basicPct / 100);
+        const fixedHra = remainingGross * (hraPct / 100);
+        const fixedConveyance = remainingGross * (convPct / 100);
+
+        salaryStructuresCreate = {
+          create: {
+            fixedGross: gross,
+            teaAllowance: tea,
+            basicPercentage: basicPct,
+            hraPercentage: hraPct,
+            conveyancePercentage: convPct,
+            fixedBasic,
+            fixedHra,
+            fixedConveyance,
+            effectiveFrom: new Date(joiningDate),
+            createdBy: req.user?.id || null,
+          }
+        };
+      }
+
+      // Create Employee Profile record
       const employee = await tx.employee.create({
         data: {
           employeeCode,
@@ -134,6 +179,8 @@ export async function createEmployee(req, res) {
               cloudinaryUrl: doc.cloudinaryUrl,
             }))
           } : undefined,
+
+          salaryStructures: salaryStructuresCreate,
         },
       });
 
@@ -204,6 +251,10 @@ export async function getEmployees(req, res) {
       take: parsedLimit,
       include: {
         designation: { select: { id: true, name: true } },
+        salaryStructures: {
+          orderBy: { effectiveFrom: 'desc' },
+          take: 1,
+        },
       },
       orderBy: { employeeCode: 'asc' },
     });
@@ -268,7 +319,16 @@ export async function updateEmployee(req, res) {
     fullName, age, dob, nationality, gender, religion, phoneNumber, email,
     presentAddress, permanentAddress, pfNumber, esicNumber,
     designationId, status, bankDetails,
+    fixedGross, teaAllowance, basicPercentage, hraPercentage, conveyancePercentage,
   } = req.body;
+
+  // Validate salary percentages if provided
+  if (fixedGross !== undefined && fixedGross !== null) {
+    const totalPercentage = parseFloat(basicPercentage || 40) + parseFloat(hraPercentage || 30) + parseFloat(conveyancePercentage || 30);
+    if (Math.abs(totalPercentage - 100) > 0.01) {
+      return res.status(400).json({ error: { message: 'Salary structure percentages must sum up to exactly 100%' } });
+    }
+  }
 
   try {
     const existing = await prisma.employee.findFirst({ where: { id, isActive: true } });
@@ -321,6 +381,59 @@ export async function updateEmployee(req, res) {
         });
       }
 
+      // 3. Update or Create salary structure if fixedGross is provided
+      if (fixedGross !== undefined && fixedGross !== null) {
+        const gross = parseFloat(fixedGross);
+        const tea = parseFloat(teaAllowance || 0);
+        const basicPct = parseFloat(basicPercentage || 40);
+        const hraPct = parseFloat(hraPercentage || 30);
+        const convPct = parseFloat(conveyancePercentage || 30);
+
+        const remainingGross = gross - tea;
+        const fixedBasic = remainingGross * (basicPct / 100);
+        const fixedHra = remainingGross * (hraPct / 100);
+        const fixedConveyance = remainingGross * (convPct / 100);
+
+        // Check if a salary structure record already exists for this employee
+        const existingStructure = await tx.salaryStructure.findFirst({
+          where: { employeeId: id },
+          orderBy: { effectiveFrom: 'desc' },
+        });
+
+        if (existingStructure) {
+          await tx.salaryStructure.update({
+            where: { id: existingStructure.id },
+            data: {
+              fixedGross: gross,
+              teaAllowance: tea,
+              basicPercentage: basicPct,
+              hraPercentage: hraPct,
+              conveyancePercentage: convPct,
+              fixedBasic,
+              fixedHra,
+              fixedConveyance,
+              updatedBy: req.user.id,
+            },
+          });
+        } else {
+          await tx.salaryStructure.create({
+            data: {
+              employeeId: id,
+              fixedGross: gross,
+              teaAllowance: tea,
+              basicPercentage: basicPct,
+              hraPercentage: hraPct,
+              conveyancePercentage: convPct,
+              fixedBasic,
+              fixedHra,
+              fixedConveyance,
+              effectiveFrom: existing.joiningDate || new Date(),
+              createdBy: req.user.id,
+            },
+          });
+        }
+      }
+
       // Log action
       await tx.auditLog.create({
         data: {
@@ -328,7 +441,7 @@ export async function updateEmployee(req, res) {
           action: 'Employee Updated',
           entityType: 'Employee',
           entityId: id,
-          description: `Updated profile details for employee ${emp.employeeCode}`,
+          description: `Updated profile details and salary structure for employee ${emp.employeeCode}`,
         },
       });
 

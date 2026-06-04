@@ -43,3 +43,7 @@ prisma/dev.db
 
 npm-cache/
 **/npm-cache/
+
+# Upload Storage
+storage/
+**/storage/

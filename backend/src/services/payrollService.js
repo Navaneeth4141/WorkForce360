@@ -51,6 +51,7 @@ export function calculateEmployeePayroll({
 
   // 2. Attendance & Net Payable Days (Section 3)
   const netPayableDays = presentDays + (halfDays * 0.5);
+  const calculatedAbsentDays = totalDaysInMonth - netPayableDays;
 
   // 3. Earned Salary Calculations (Section 4)
   const earnedBasic = (fixedBasic * netPayableDays) / totalDaysInMonth;
@@ -126,6 +127,7 @@ export function calculateEmployeePayroll({
       fixedConveyance: toDec(fixedConveyance),
     },
     netPayableDays: toDec(netPayableDays),
+    absentDays: toDec(calculatedAbsentDays),
     earnedBasic: toDec(earnedBasic),
     earnedHra: toDec(earnedHra),
     earnedConveyance: toDec(earnedConveyance),

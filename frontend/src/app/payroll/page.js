@@ -35,6 +35,8 @@ export default function PayrollPage() {
   const [historyList, setHistoryList] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [selectedBatchDetails, setSelectedBatchDetails] = useState(null);
+  const [historyMonth, setHistoryMonth] = useState(new Date().getMonth() + 1); // 1-12
+  const [historyYear, setHistoryYear] = useState(new Date().getFullYear());
 
   // Month options helper
   const monthsList = [
@@ -63,9 +65,23 @@ export default function PayrollPage() {
   useEffect(() => {
     if (activeView === 'history') {
       loadHistory();
-      setSelectedBatchDetails(null);
     }
   }, [activeView]);
+
+  useEffect(() => {
+    if (activeView === 'history') {
+      const match = historyList.find(
+        (batch) =>
+          batch.payrollMonth === historyMonth &&
+          batch.payrollYear === historyYear
+      );
+      if (match) {
+        handleViewBatchDetails(match.id);
+      } else {
+        setSelectedBatchDetails(null);
+      }
+    }
+  }, [historyMonth, historyYear, historyList, activeView]);
 
   // Request payroll batch generation (Step 2)
   const handleGeneratePreview = async () => {
@@ -325,7 +341,13 @@ export default function PayrollPage() {
                   <p className="text-xs text-slate-500 mt-1">Salary snapshot is now permanent. Scans and payslip PDFs generated successfully for workers.</p>
                 </div>
                 <button
-                  onClick={() => setActiveView('history')}
+                  onClick={() => {
+                    if (payrollBatch) {
+                      setHistoryMonth(payrollBatch.payrollMonth);
+                      setHistoryYear(payrollBatch.payrollYear);
+                    }
+                    setActiveView('history');
+                  }}
                   className="dashboard-btn-primary w-full"
                 >
                   View Released Payslips
@@ -338,45 +360,51 @@ export default function PayrollPage() {
 
         {/* VIEW 2: HISTORICAL PAYROLL LIST */}
         {activeView === 'history' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="space-y-6">
             
-            {/* Batch List sidebar */}
-            <div className="lg:col-span-1 space-y-3">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Historical Runs</h3>
-              
-              {historyLoading && !selectedBatchDetails && (
-                <div className="text-center py-6 text-slate-400">
-                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                  Loading history...
-                </div>
-              )}
-              
-              {!historyLoading && historyList.length === 0 && (
-                <p className="text-xs text-slate-400 italic bg-white border rounded-xl p-4">No historical runs recorded.</p>
-              )}
+            {/* Filter selectors bar */}
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-800">Payroll History Lookup</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Select a month and year to view detailed calculations and download payslips.</p>
+              </div>
 
-              {historyList.map((batch) => (
-                <button
-                  key={batch.id}
-                  onClick={() => handleViewBatchDetails(batch.id)}
-                  className={`w-full text-left border rounded-xl p-4 shadow-sm transition-all flex items-center justify-between ${
-                    selectedBatchDetails?.id === batch.id
-                      ? 'border-blue-600 bg-blue-50/20'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}
-                >
-                  <div>
-                    <h4 className="font-bold text-sm text-slate-800">Batch {getMonthName(batch.payrollMonth)} {batch.payrollYear}</h4>
-                    <p className="text-xs text-slate-500 mt-1">Cost: Rs. {round(batch.totalPayrollCost)}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                </button>
-              ))}
+              <div className="flex items-center gap-4">
+                <div className="w-40">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Month</label>
+                  <select
+                    value={historyMonth}
+                    onChange={(e) => setHistoryMonth(parseInt(e.target.value, 10))}
+                    className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none font-medium text-slate-700"
+                  >
+                    {monthsList.map((m) => (
+                      <option key={m.num} value={m.num}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="w-32">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Year</label>
+                  <select
+                    value={historyYear}
+                    onChange={(e) => setHistoryYear(parseInt(e.target.value, 10))}
+                    className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none font-medium text-slate-700"
+                  >
+                    {yearsList.map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Batch Details pane */}
-            <div className="lg:col-span-2">
-              {selectedBatchDetails ? (
+            <div className="w-full">
+              {historyLoading ? (
+                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-400">
+                  <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                  Loading historical payroll details...
+                </div>
+              ) : selectedBatchDetails ? (
                 <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden space-y-6 p-6">
                   
                   {/* Summary */}
@@ -392,49 +420,165 @@ export default function PayrollPage() {
 
                   {/* Table details */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
-                          <th className="p-3">Employee Code</th>
-                          <th className="p-3">Name</th>
-                          <th className="p-3 text-right">Gross Pay</th>
-                          <th className="p-3 text-right">Deductions</th>
-                          <th className="p-3 text-right">Net Take Home</th>
-                          <th className="p-3 text-center">Payslip</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-600">
-                        {selectedBatchDetails.payrollItems.map((item) => (
-                          <tr key={item.id} className="hover:bg-slate-50/50">
-                            <td className="p-3 font-semibold text-blue-600">{item.employee.employeeCode}</td>
-                            <td className="p-3 font-medium text-slate-900">{item.employee.fullName}</td>
-                            <td className="p-3 text-right">Rs. {round(item.grossPay)}</td>
-                            <td className="p-3 text-right text-red-600">Rs. {round(item.pf + item.esic + item.professionalTax)}</td>
-                            <td className="p-3 text-right font-bold text-emerald-600">Rs. {round(item.netSalary)}</td>
-                            <td className="p-3 text-center">
-                              {item.payslips?.[0] ? (
-                                <a
-                                  href={`http://localhost:5000${item.payslips[0].pdfUrl}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:underline font-semibold"
-                                >
-                                  <FileText className="w-4 h-4 mr-1" /> PDF
-                                </a>
-                              ) : (
-                                <span className="text-slate-400">-</span>
-                              )}
-                            </td>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-[10px] min-w-[2000px] table-fixed">
+                        <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-[9px]">
+                          {/* Row 1: Header Categories */}
+                          <tr className="border-b border-slate-200">
+                            <th rowSpan={2} className="p-2 border-r border-slate-200 text-center sticky left-0 bg-slate-100 z-10 w-[40px]">Sl#</th>
+                            <th rowSpan={2} className="p-2 border-r border-slate-200 sticky left-[40px] bg-slate-100 z-10 w-[90px]">Emp ID</th>
+                            <th rowSpan={2} className="p-2 border-r border-slate-200 sticky left-[130px] bg-slate-100 z-10 w-[140px]">Name</th>
+                            
+                            <th colSpan={3} className="p-2 border-r border-slate-200 text-center bg-amber-50 text-amber-800">Attendance</th>
+                            <th colSpan={5} className="p-2 border-r border-slate-200 text-center bg-yellow-50 text-yellow-800">Gross Wages</th>
+                            <th colSpan={5} className="p-2 border-r border-slate-200 text-center bg-emerald-50 text-emerald-800">Earned Wages</th>
+                            <th colSpan={3} className="p-2 border-r border-slate-200 text-center bg-sky-50 text-sky-800">OT Wages</th>
+                            <th colSpan={3} className="p-2 border-r border-slate-200 text-center bg-slate-50 text-slate-800">Special Allowance</th>
+                            
+                            <th rowSpan={2} className="p-2 border-r border-slate-200 text-right bg-green-100 text-green-800 font-bold w-[90px]">Gross Pay</th>
+                            
+                            <th colSpan={3} className="p-2 border-r border-slate-200 text-center bg-orange-50 text-orange-800">Deductions</th>
+                            
+                            <th rowSpan={2} className="p-2 border-r border-slate-200 text-right bg-blue-100 text-blue-800 font-bold w-[90px]">Net Pay</th>
+                            
+                            <th colSpan={3} className="p-2 border-r border-slate-200 text-center bg-purple-50 text-purple-800">Employer Contributions</th>
+                            
+                            <th rowSpan={2} className="p-2 border-r border-slate-200 text-right bg-slate-200 text-slate-900 font-bold w-[95px]">Total CTC</th>
+                            <th rowSpan={2} className="p-2 text-center w-[70px]">Payslip</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                          
+                          {/* Row 2: Sub-headers */}
+                          <tr className="border-b border-slate-200">
+                            {/* Attendance */}
+                            <th className="p-2 border-r border-slate-200 text-center bg-amber-50/50 text-amber-700 w-[60px]">Total Days</th>
+                            <th className="p-2 border-r border-slate-200 text-center bg-amber-50/50 text-amber-700 w-[65px]">Days Abs</th>
+                            <th className="p-2 border-r border-slate-200 text-center bg-amber-50/50 text-amber-700 w-[65px]">Payable</th>
+
+                            {/* Gross Wages */}
+                            <th className="p-2 border-r border-slate-200 text-right bg-yellow-50/50 text-yellow-700 w-[75px]">Basic</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-yellow-50/50 text-yellow-700 w-[75px]">HRA</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-yellow-50/50 text-yellow-700 w-[80px]">Conveyance</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-yellow-50/50 text-yellow-700 w-[70px]">Tea Allow</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-yellow-50/50 text-yellow-700 w-[85px]">Fixed Gross</th>
+
+                            {/* Earned Wages */}
+                            <th className="p-2 border-r border-slate-200 text-right bg-emerald-50/50 text-emerald-700 w-[75px]">Ernd Basic</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-emerald-50/50 text-emerald-700 w-[75px]">Ernd HRA</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-emerald-50/50 text-emerald-700 w-[80px]">Ernd Oth</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-emerald-50/50 text-emerald-700 w-[70px]">Tea Allow</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-emerald-50/50 text-emerald-700 w-[85px]">Ernd Gross</th>
+
+                            {/* OT Wages */}
+                            <th className="p-2 border-r border-slate-200 text-center bg-sky-50/50 text-sky-700 w-[55px]">OT Hrs</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-sky-50/50 text-sky-700 w-[65px]">OT Rate</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-sky-50/50 text-sky-700 w-[75px]">OT Amt</th>
+
+                            {/* Special Allowance */}
+                            <th className="p-2 border-r border-slate-200 text-center bg-slate-50/50 text-slate-600 w-[55px]">Hours</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-slate-50/50 text-slate-600 w-[65px]">Rate/Hr</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-slate-50/50 text-slate-600 w-[75px]">Spec Allow</th>
+
+                            {/* Deductions */}
+                            <th className="p-2 border-r border-slate-200 text-right bg-orange-50/50 text-orange-700 w-[75px]">EE PF 12%</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-orange-50/50 text-orange-700 w-[75px]">ESIC 0.75%</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-orange-50/50 text-orange-700 w-[65px]">P. Tax</th>
+
+                            {/* Employer Contributions */}
+                            <th className="p-2 border-r border-slate-200 text-right bg-purple-50/50 text-purple-700 w-[75px]">ER PF 12%</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-purple-50/50 text-purple-700 w-[75px]">PF Admin</th>
+                            <th className="p-2 border-r border-slate-200 text-right bg-purple-50/50 text-purple-700 w-[75px]">ESIC 3.25%</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-slate-600">
+                          {selectedBatchDetails.payrollItems.map((item, idx) => {
+                            const salaryStructure = item.employee.salaryStructures?.[0];
+                            const earnedGross = parseFloat(item.earnedBasic) + parseFloat(item.earnedHra) + parseFloat(item.earnedConveyance) + parseFloat(item.earnedTeaAllowance);
+                            const otRate = item.overtimeHours > 0 ? (parseFloat(item.overtimeWages) / parseFloat(item.overtimeHours)) : 0;
+                            const specialAllowanceRate = item.overtimeHours > 0 ? (parseFloat(item.specialAllowance) / parseFloat(item.overtimeHours)) : 0;
+                            const totalDeductions = parseFloat(item.pf) + parseFloat(item.esic) + parseFloat(item.professionalTax);
+
+                            return (
+                              <tr key={item.id} className="hover:bg-slate-50/50 group text-[10px]">
+                                {/* Sticky columns */}
+                                <td className="p-2 border-r border-slate-200 text-center sticky left-0 bg-white group-hover:bg-slate-50 z-10">{idx + 1}</td>
+                                <td className="p-2 border-r border-slate-200 font-semibold text-blue-600 sticky left-[40px] bg-white group-hover:bg-slate-50 z-10">{item.employee.employeeCode}</td>
+                                <td className="p-2 border-r border-slate-200 font-medium text-slate-900 sticky left-[130px] bg-white group-hover:bg-slate-50 z-10 truncate">{item.employee.fullName}</td>
+                                
+                                {/* Attendance */}
+                                <td className="p-2 border-r border-slate-100 text-center bg-amber-50/10">{item.totalDays}</td>
+                                <td className="p-2 border-r border-slate-100 text-center bg-amber-50/10 text-red-500 font-semibold">{parseFloat(item.absentDays || 0)}</td>
+                                <td className="p-2 border-r border-slate-200 text-center bg-amber-50/10 font-bold">{parseFloat(item.payableDays || 0)}</td>
+                                
+                                {/* Gross Wages */}
+                                <td className="p-2 border-r border-slate-100 text-right bg-yellow-50/10">{round(salaryStructure?.fixedBasic)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-yellow-50/10">{round(salaryStructure?.fixedHra)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-yellow-50/10">{round(salaryStructure?.fixedConveyance)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-yellow-50/10">{round(salaryStructure?.teaAllowance)}</td>
+                                <td className="p-2 border-r border-slate-200 text-right bg-yellow-50/10 font-semibold text-slate-800">{round(salaryStructure?.fixedGross)}</td>
+                                
+                                {/* Earned Wages */}
+                                <td className="p-2 border-r border-slate-100 text-right bg-emerald-50/10">{round(item.earnedBasic)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-emerald-50/10">{round(item.earnedHra)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-emerald-50/10">{round(item.earnedConveyance)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-emerald-50/10">{round(item.earnedTeaAllowance)}</td>
+                                <td className="p-2 border-r border-slate-200 text-right bg-emerald-50/10 font-semibold text-emerald-700">{round(earnedGross)}</td>
+                                
+                                {/* OT Wages */}
+                                <td className="p-2 border-r border-slate-100 text-center bg-sky-50/10 font-semibold">{parseFloat(item.overtimeHours || 0)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-sky-50/10 text-slate-500">{otRate.toFixed(2)}</td>
+                                <td className="p-2 border-r border-slate-200 text-right bg-sky-50/10 font-semibold text-sky-700">{round(item.overtimeWages)}</td>
+                                
+                                {/* Special Allowance */}
+                                <td className="p-2 border-r border-slate-100 text-center bg-slate-50/10">{parseFloat(item.overtimeHours || 0)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-slate-50/10 text-slate-500">{specialAllowanceRate.toFixed(2)}</td>
+                                <td className="p-2 border-r border-slate-200 text-right bg-slate-50/10 font-semibold text-slate-700">{round(item.specialAllowance)}</td>
+                                
+                                {/* Gross Pay */}
+                                <td className="p-2 border-r border-slate-200 text-right bg-green-50 font-bold text-green-800">{round(item.grossPay)}</td>
+                                
+                                {/* Deductions */}
+                                <td className="p-2 border-r border-slate-100 text-right bg-orange-50/10 text-red-600">{round(item.pf)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-orange-50/10 text-red-600">{round(item.esic)}</td>
+                                <td className="p-2 border-r border-slate-200 text-right bg-orange-50/10 text-red-600">{round(item.professionalTax)}</td>
+                                
+                                {/* Net Pay */}
+                                <td className="p-2 border-r border-slate-200 text-right bg-blue-50 font-black text-blue-700">{round(item.netSalary)}</td>
+                                
+                                {/* Employer Contributions */}
+                                <td className="p-2 border-r border-slate-100 text-right bg-purple-50/10 text-purple-700">{round(item.employerPf)}</td>
+                                <td className="p-2 border-r border-slate-100 text-right bg-purple-50/10 text-purple-700">{round(item.employerPfAdmin)}</td>
+                                <td className="p-2 border-r border-slate-200 text-right bg-purple-50/10 text-purple-700">{round(item.employerEsic)}</td>
+                                
+                                {/* Total CTC */}
+                                <td className="p-2 border-r border-slate-200 text-right bg-slate-100 font-extrabold text-slate-800">{round(item.totalCtc)}</td>
+                                
+                                {/* Payslip */}
+                                <td className="p-2 text-center">
+                                  {item.payslips?.[0] ? (
+                                    <a
+                                      href={`http://localhost:5000${item.payslips[0].pdfUrl}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold"
+                                    >
+                                      <FileText className="w-3.5 h-3.5 mr-1" /> PDF
+                                    </a>
+                                  ) : (
+                                    <span className="text-slate-400">-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
                 </div>
               ) : (
                 <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 italic">
-                  Select a historical run from the sidebar to inspect items and download payslips.
+                  No payroll run found for the selected period.
                 </div>
               )}
             </div>

@@ -55,6 +55,9 @@ export async function saveAttendance(req, res) {
       const ot = parseFloat(overtimeHours) || 0.0;
       
       // Overtime validation (increments of 0.5 and <= maximum limit)
+      if (ot < 0) {
+        return res.status(400).json({ error: { message: `Overtime hours cannot be negative.` } });
+      }
       if (ot > 0) {
         if (ot % 0.5 !== 0) {
           return res.status(400).json({ error: { message: `Overtime hours must be in increments of 0.5. Received: ${overtimeHours}` } });

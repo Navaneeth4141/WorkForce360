@@ -358,7 +358,17 @@ export async function getPayrollBatchDetails(req, res) {
       include: {
         payrollItems: {
           include: {
-            employee: { select: { employeeCode: true, fullName: true, bankDetails: true } },
+            employee: {
+              select: {
+                employeeCode: true,
+                fullName: true,
+                bankDetails: true,
+                salaryStructures: {
+                  orderBy: { effectiveFrom: 'desc' },
+                  take: 1,
+                },
+              },
+            },
             payslips: true,
           },
         },

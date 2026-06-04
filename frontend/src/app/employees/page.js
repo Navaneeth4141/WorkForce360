@@ -41,7 +41,8 @@ export default function EmployeesPage() {
   const [editForm, setEditForm] = useState({
     fullName: '', phoneNumber: '', email: '', presentAddress: '', permanentAddress: '',
     pfNumber: '', esicNumber: '', designationId: '', status: 'ACTIVE',
-    bankDetails: { bankName: '', accountHolderName: '', accountNumber: '', ifscCode: '', branchName: '' }
+    bankDetails: { bankName: '', accountHolderName: '', accountNumber: '', ifscCode: '', branchName: '' },
+    fixedGross: '', teaAllowance: '500', basicPercentage: '40', hraPercentage: '30', conveyancePercentage: '30'
   });
 
   const [message, setMessage] = useState('');
@@ -116,6 +117,7 @@ export default function EmployeesPage() {
   // Open edit modal
   const handleOpenEdit = (emp) => {
     setEditEmp(emp);
+    const activeSalary = emp.salaryStructures?.[0] || {};
     setEditForm({
       fullName: emp.fullName,
       phoneNumber: emp.phoneNumber,
@@ -132,15 +134,43 @@ export default function EmployeesPage() {
         accountNumber: emp.bankDetails?.accountNumber || '',
         ifscCode: emp.bankDetails?.ifscCode || '',
         branchName: emp.bankDetails?.branchName || ''
-      }
+      },
+      fixedGross: activeSalary.fixedGross || '',
+      teaAllowance: activeSalary.teaAllowance || '500',
+      basicPercentage: activeSalary.basicPercentage || '40',
+      hraPercentage: activeSalary.hraPercentage || '30',
+      conveyancePercentage: activeSalary.conveyancePercentage || '30'
     });
   };
 
   // Submit edit form
   const handleUpdateEmployee = async (e) => {
     e.preventDefault();
+    
+    // Check if salary parameters are provided and validate percentage sum to 100%
+    if (editForm.fixedGross !== '') {
+      const basicPct = parseFloat(editForm.basicPercentage || 0);
+      const hraPct = parseFloat(editForm.hraPercentage || 0);
+      const convPct = parseFloat(editForm.conveyancePercentage || 0);
+      const totalPct = basicPct + hraPct + convPct;
+
+      if (Math.abs(totalPct - 100) > 0.01) {
+        alert('Salary breakdown percentages (Basic + HRA + Conveyance) must sum up to exactly 100%');
+        return;
+      }
+    }
+
     try {
-      await API.put(`/employees/${editEmp.id}`, editForm);
+      const payload = {
+        ...editForm,
+        fixedGross: editForm.fixedGross !== '' ? parseFloat(editForm.fixedGross) : null,
+        teaAllowance: editForm.teaAllowance !== '' ? parseFloat(editForm.teaAllowance) : 0,
+        basicPercentage: editForm.basicPercentage !== '' ? parseFloat(editForm.basicPercentage) : 40,
+        hraPercentage: editForm.hraPercentage !== '' ? parseFloat(editForm.hraPercentage) : 30,
+        conveyancePercentage: editForm.conveyancePercentage !== '' ? parseFloat(editForm.conveyancePercentage) : 30,
+      };
+
+      await API.put(`/employees/${editEmp.id}`, payload);
       setEditEmp(null);
       setMessage('Employee updated successfully');
       loadEmployees();
@@ -624,8 +654,8 @@ export default function EmployeesPage() {
                         type="text"
                         value={editForm.bankDetails.bankName}
                         onChange={(e) => setEditForm({
-                          ...editForm,
-                          bankDetails: { ...editForm.bankDetails, bankName: e.target.value }
+                           ...editForm,
+                           bankDetails: { ...editForm.bankDetails, bankName: e.target.value }
                         })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
@@ -636,8 +666,8 @@ export default function EmployeesPage() {
                         type="text"
                         value={editForm.bankDetails.accountNumber}
                         onChange={(e) => setEditForm({
-                          ...editForm,
-                          bankDetails: { ...editForm.bankDetails, accountNumber: e.target.value }
+                           ...editForm,
+                           bankDetails: { ...editForm.bankDetails, accountNumber: e.target.value }
                         })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
@@ -648,8 +678,8 @@ export default function EmployeesPage() {
                         type="text"
                         value={editForm.bankDetails.ifscCode}
                         onChange={(e) => setEditForm({
-                          ...editForm,
-                          bankDetails: { ...editForm.bankDetails, ifscCode: e.target.value }
+                           ...editForm,
+                           bankDetails: { ...editForm.bankDetails, ifscCode: e.target.value }
                         })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
@@ -660,9 +690,72 @@ export default function EmployeesPage() {
                         type="text"
                         value={editForm.bankDetails.branchName}
                         onChange={(e) => setEditForm({
-                          ...editForm,
-                          bankDetails: { ...editForm.bankDetails, branchName: e.target.value }
+                           ...editForm,
+                           bankDetails: { ...editForm.bankDetails, branchName: e.target.value }
                         })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Salary Structure Configuration */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1">Salary Structure Configuration</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Fixed Gross Salary (Monthly) *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        value={editForm.fixedGross}
+                        onChange={(e) => setEditForm({ ...editForm, fixedGross: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Tea Allowance *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        value={editForm.teaAllowance}
+                        onChange={(e) => setEditForm({ ...editForm, teaAllowance: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Basic Salary % *</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        required
+                        value={editForm.basicPercentage}
+                        onChange={(e) => setEditForm({ ...editForm, basicPercentage: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">HRA % *</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        required
+                        value={editForm.hraPercentage}
+                        onChange={(e) => setEditForm({ ...editForm, hraPercentage: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Conveyance % *</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        required
+                        value={editForm.conveyancePercentage}
+                        onChange={(e) => setEditForm({ ...editForm, conveyancePercentage: e.target.value })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
                     </div>

@@ -21,17 +21,17 @@ export function generatePayslipPdf({ payrollItem, employee, designation, setting
       });
 
       // --- Title and Logo Block ---
-      doc.fontSize(16).bold().text(setting?.companyName || 'Elite Staffing Solutions', { align: 'center' });
-      doc.fontSize(9).medium().text(setting?.address || '', { align: 'center' });
+      doc.fontSize(16).font('Helvetica-Bold').text(setting?.companyName || 'Elite Staffing Solutions', { align: 'center' });
+      doc.fontSize(9).font('Helvetica').text(setting?.address || '', { align: 'center' });
       doc.fontSize(9).text(`GST: ${setting?.gstNumber || ''} | PAN: ${setting?.panNumber || ''}`, { align: 'center' });
       doc.moveDown(1.5);
 
-      doc.fontSize(13).bold().text('PAYSLIP FOR THE MONTH OF ' + getMonthName(payrollItem.payrollBatch.payrollMonth) + ' ' + payrollItem.payrollBatch.payrollYear, { align: 'center' });
+      doc.fontSize(13).font('Helvetica-Bold').text('PAYSLIP FOR THE MONTH OF ' + getMonthName(payrollItem.payrollBatch.payrollMonth) + ' ' + payrollItem.payrollBatch.payrollYear, { align: 'center' });
       doc.moveDown(1);
 
       // --- Metadata Grid ---
       const gridTop = doc.y;
-      doc.fontSize(9).bold();
+      doc.fontSize(9).font('Helvetica-Bold');
       doc.text('Employee Code:', 50, gridTop);
       doc.text('Employee Name:', 50, gridTop + 15);
       doc.text('Designation:', 50, gridTop + 30);
@@ -161,12 +161,12 @@ export function generateInvoicePdf({ invoiceBatch, contract, client, setting, in
       });
 
       // Header company details
-      doc.fontSize(16).bold().text(setting?.companyName || 'Elite Staffing Solutions', { align: 'center' });
-      doc.fontSize(9).medium().text(setting?.address || '', { align: 'center' });
+      doc.fontSize(16).font('Helvetica-Bold').text(setting?.companyName || 'Elite Staffing Solutions', { align: 'center' });
+      doc.fontSize(9).font('Helvetica').text(setting?.address || '', { align: 'center' });
       doc.fontSize(9).text(`GSTIN: ${setting?.gstNumber || ''} | PAN: ${setting?.panNumber || ''}`, { align: 'center' });
       doc.moveDown(1.5);
 
-      doc.fontSize(13).bold().text('TAX INVOICE', { align: 'center' });
+      doc.fontSize(13).font('Helvetica-Bold').text('TAX INVOICE', { align: 'center' });
       doc.moveDown(1);
 
       // Invoice info block
