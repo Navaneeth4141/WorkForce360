@@ -1,283 +1,262 @@
-# WorkForce360
+<div align="center">
 
-## Workforce, Payroll, Contract, Invoice & Expense Management Platform
+# 🚀 WorkForce360
 
-WorkForce360 is a comprehensive workforce management solution designed specifically for staffing agencies and manpower supply companies. The platform centralizes employee administration, attendance tracking, payroll processing, client contract management, invoice generation, expense management, document storage, and business reporting into a single web-based application.
+### Workforce • Payroll • Contracts • Invoicing • Expense Management Platform
 
-The system eliminates manual spreadsheets and paperwork by automating payroll calculations, statutory deductions, employer contributions, invoice generation, and reporting workflows.
+Transforming staffing agency operations through workforce automation, payroll intelligence, contract management, invoice generation, and business analytics.
+
+<br>
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![Node.js](https://img.shields.io/badge/Node.js-22-green?style=for-the-badge&logo=node.js)
+![Express](https://img.shields.io/badge/Express.js-Backend-lightgrey?style=for-the-badge)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge&logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-Storage-blue?style=for-the-badge&logo=cloudinary)
+![Vercel](https://img.shields.io/badge/Vercel-Frontend-black?style=for-the-badge&logo=vercel)
+![Render](https://img.shields.io/badge/Render-Backend-46E3B7?style=for-the-badge)
+
+<br>
+
+**Built for Staffing Agencies, Workforce Contractors, Payroll Teams & Business Operations**
+
+</div>
 
 ---
 
-## Project Overview
+# 📖 Overview
 
-WorkForce360 provides:
+WorkForce360 is a modern workforce management platform specifically designed for staffing agencies and manpower supply companies.
 
-* Employee Onboarding & Management
-* Attendance & Overtime Tracking
-* Automated Payroll Processing
-* Payslip Generation
-* Client & Contract Management
-* Automated Invoice Generation
-* Expense Tracking
-* Business Reports & Analytics
-* Employee Document Management
-* Worker Self-Service Portal
-* Role-Based Access Control
+The platform centralizes employee management, attendance tracking, payroll processing, contract administration, invoice generation, expense monitoring, document management, and business reporting into a single digital ecosystem.
+
+Instead of relying on spreadsheets and manual calculations, WorkForce360 automates complex payroll operations, statutory deductions, employer contributions, GST invoicing, and financial reporting while maintaining complete historical records.
 
 ---
 
-## Key Features
+# ✨ Key Features
 
-### Authentication & Access Management
+## 👥 Employee Management
 
-* Secure Login System
-* JWT Authentication
-* Role-Based Authorization
-* Password Change Functionality
-* Admin Password Reset
-* Protected Routes
+- Employee Onboarding Wizard
+- Employee Profile Management
+- Family Information Management
+- Educational Details Management
+- Employment History Tracking
+- Salary Structure Assignment
+- Employee Status Management
+- Document Storage & Retrieval
 
-### Employee Management
+---
 
-* Employee Onboarding Wizard
-* Personal Information
-* Family Information
-* Educational Details
-* Employment History
-* Salary Structure Management
-* Status Tracking
-* Employee Profile Management
+## 📅 Attendance Management
 
-### Document Management
+- Daily Attendance Tracking
+- Present / Half-Day / Absent Records
+- Overtime Tracking
+- Attendance Reports
+- Attendance History
+- Export Attendance Data
 
-Secure storage and retrieval of:
+---
 
-* Employee Photograph
-* Aadhaar Card
-* PAN Card
-* Bank Passbook
-* Joining Form
-* PF Documents
-* ESIC Documents
+## 💰 Payroll Engine
 
-### Attendance Management
+Automated payroll generation based on:
 
-* Daily Attendance Recording
-* Present / Half Day / Absent Tracking
-* Overtime Recording
-* Monthly Attendance Summary
-* Attendance Reports
-* Attendance Export
-
-### Payroll Management
-
-Automated payroll processing based on:
-
-* Fixed Gross Salary
-* Basic Salary
-* HRA
-* Conveyance
-* Tea Allowance
-* Attendance
-* Overtime
-* Special Allowance
-* PF
-* ESIC
-* Professional Tax
+- Fixed Gross Salary
+- Basic Salary
+- HRA
+- Conveyance
+- Tea Allowance
+- Attendance
+- Overtime
+- Special Allowance
+- PF Deduction
+- ESIC Deduction
+- Professional Tax
 
 Features:
 
-* Monthly Payroll Generation
-* Payroll Preview
-* Payroll Freeze Mechanism
-* Salary Revision Tracking
-* Historical Payroll Preservation
+- Payroll Preview
+- Payroll Freeze Mechanism
+- Salary Revision Tracking
+- Historical Payroll Preservation
+- Automated Payslip Generation
 
-### Payslip Management
+---
 
-* Auto Generated Payslips
-* PDF Download
-* Historical Payslip Access
-* Payroll Snapshot Preservation
+## 📄 Payslip Management
 
-### Client Management
+- PDF Payslip Generation
+- Payslip Downloads
+- Payroll History
+- Historical Salary Records
 
-* Client Registration
-* Client Profile Management
-* Contact Information Storage
-* Historical Client Records
+---
 
-### Contract Management
+## 🏢 Client Management
 
-* Contract Creation
-* Service Charge Configuration
-* GST Configuration
-* Contract Lifecycle Tracking
+- Client Registration
+- Contact Information Management
+- Client Profiles
+- Historical Client Records
 
-### Invoice Management
+---
 
-Automated invoice generation including:
+## 📑 Contract Management
 
-* Payroll Cost
-* Employer Contributions
-* Service Charges
-* GST Calculations
+- Contract Creation
+- Contract Lifecycle Tracking
+- Service Charge Configuration
+- GST Configuration
+- Contract Status Management
+
+---
+
+## 🧾 Invoice Generation
+
+Automatically generates invoices using:
+
+- Payroll Cost
+- Employer Contributions
+- Service Charges
+- GST Calculations
 
 Features:
 
-* Invoice Preview
-* Invoice Freeze Mechanism
-* PDF Export
-* Historical Invoice Preservation
+- Invoice Preview
+- PDF Invoice Generation
+- Invoice Freeze Mechanism
+- Historical Invoice Preservation
 
-### Expense Management
+---
 
-* Expense Recording
-* Expense Categorization
-* Expense Reporting
-* Expense History
+## 💸 Expense Management
 
-### Reports & Analytics
+- Expense Recording
+- Expense Categorization
+- Expense History
+- Expense Analytics
 
-Available Reports:
+---
 
-* Attendance Reports
-* Payroll Reports
-* Invoice Reports
-* Revenue Reports
-* Expense Reports
-* Profit Reports
+## 📊 Reports & Analytics
 
-Export Formats:
+Generate:
 
-* PDF
-* Excel
+- Attendance Reports
+- Payroll Reports
+- Invoice Reports
+- Revenue Reports
+- Expense Reports
+- Profit Reports
 
-### Worker Self-Service Portal
+Export Options:
+
+- PDF
+- Excel
+
+---
+
+## 👨‍💼 Worker Self-Service Portal
 
 Workers can:
 
-* View Profile
-* View Attendance
-* View Payroll History
-* Download Payslips
-* Change Password
+- View Profile
+- View Attendance
+- View Salary History
+- Download Payslips
+- Change Password
 
 ---
 
-## User Roles
-
-### Admin
-
-Admin has complete access to:
-
-* Employees
-* Attendance
-* Payroll
-* Payslips
-* Clients
-* Contracts
-* Invoices
-* Expenses
-* Reports
-* Settings
-
-### Worker
-
-Worker can:
-
-* View Own Profile
-* View Own Attendance
-* View Own Payroll
-* Download Own Payslips
-* Change Password
-
-Workers cannot modify business records.
-
----
-
-## System Architecture
+# 🏗️ System Architecture
 
 ```text
-Admin / Worker
-       │
-       ▼
-Next.js Frontend
-       │
-       ▼
-REST API Layer
- (Express.js)
-       │
-       ▼
- Prisma ORM
-       │
-       ▼
- PostgreSQL
-       │
-       ▼
- Cloudinary
+                 ┌─────────────────┐
+                 │   Admin Portal  │
+                 └────────┬────────┘
+                          │
+                 ┌────────▼────────┐
+                 │ Worker Portal   │
+                 └────────┬────────┘
+                          │
+                          ▼
+              ┌──────────────────────┐
+              │    Next.js Frontend  │
+              └──────────┬───────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │   Express.js APIs    │
+              └──────────┬───────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │      Prisma ORM      │
+              └──────────┬───────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │ PostgreSQL Database  │
+              └──────────┬───────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │     Cloudinary       │
+              │  Document Storage    │
+              └──────────────────────┘
 ```
 
-Architecture Pattern:
-
-* Monolithic Modular Architecture
-
 ---
 
-## Technology Stack
+# 🛠️ Technology Stack
 
-### Frontend
+## Frontend
 
-| Technology   | Purpose            |
-| ------------ | ------------------ |
-| Next.js      | Frontend Framework |
-| Tailwind CSS | Styling            |
-| Shadcn/UI    | UI Components      |
-| Axios        | API Communication  |
-| Recharts     | Analytics & Graphs |
+| Technology | Purpose |
+|------------|----------|
+| Next.js | Application Framework |
+| Tailwind CSS | Styling |
+| Shadcn/UI | UI Components |
+| Axios | API Communication |
+| Recharts | Analytics & Dashboards |
 
-### Backend
+## Backend
 
-| Technology | Purpose           |
-| ---------- | ----------------- |
-| Node.js    | Runtime           |
-| Express.js | REST APIs         |
-| Prisma ORM | Database Access   |
-| JWT        | Authentication    |
-| bcrypt     | Password Security |
+| Technology | Purpose |
+|------------|----------|
+| Node.js | Runtime |
+| Express.js | REST APIs |
+| Prisma ORM | Database ORM |
+| JWT | Authentication |
+| bcrypt | Password Security |
 
-### Database
+## Database
 
-| Technology | Purpose          |
-| ---------- | ---------------- |
+| Technology | Purpose |
+|------------|----------|
 | PostgreSQL | Primary Database |
-| Supabase   | Managed Hosting  |
+| Supabase | Database Hosting |
 
-### Storage
+## Storage
 
-| Technology | Purpose          |
-| ---------- | ---------------- |
+| Technology | Purpose |
+|------------|----------|
 | Cloudinary | Document Storage |
 
-### Reporting
+## Reporting
 
-| Technology | Purpose        |
-| ---------- | -------------- |
-| Puppeteer  | PDF Generation |
-| ExcelJS    | Excel Exports  |
-
-### Deployment
-
-| Service    | Purpose            |
-| ---------- | ------------------ |
-| Vercel     | Frontend Hosting   |
-| Render     | Backend Hosting    |
-| Supabase   | PostgreSQL Hosting |
-| Cloudinary | File Storage       |
+| Technology | Purpose |
+|------------|----------|
+| Puppeteer | PDF Generation |
+| ExcelJS | Excel Exports |
 
 ---
 
-## Project Structure
+# 📂 Project Structure
 
 ```text
 workforce360/
@@ -292,13 +271,13 @@ workforce360/
 │
 ├── backend/
 │   ├── src/
-│   │   ├── modules/
-│   │   ├── routes/
 │   │   ├── controllers/
 │   │   ├── services/
+│   │   ├── routes/
 │   │   ├── middleware/
-│   │   ├── prisma/
-│   │   └── utils/
+│   │   ├── modules/
+│   │   ├── utils/
+│   │   └── prisma/
 │   │
 │   └── prisma/
 │       ├── schema.prisma
@@ -311,145 +290,65 @@ workforce360/
 
 ---
 
-## Database Modules
+# 🔐 Security Features
 
-### Authentication
-
-* Users
-* User Sessions
-
-### Employee Management
-
-* Employees
-* Family Members
-* Education
-* Employment History
-* Bank Details
-* Documents
-
-### Salary Management
-
-* Salary Structures
-* Salary Revisions
-
-### Attendance
-
-* Daily Attendance Records
-
-### Payroll
-
-* Payroll Batches
-* Payroll Items
-* Payslips
-
-### Client Management
-
-* Clients
-* Contracts
-
-### Billing
-
-* Invoice Batches
-* Invoice Items
-
-### Finance
-
-* Expenses
-* Expense Categories
-
-### System
-
-* Settings
-* Audit Logs
+- JWT Authentication
+- Role-Based Access Control
+- bcrypt Password Hashing
+- Route Protection
+- Input Validation
+- Request Sanitization
+- Secure File Uploads
+- HTTPS Deployment
+- Environment Variable Protection
 
 ---
 
-## Payroll Engine
+# 📈 Performance Targets
 
-The payroll engine supports:
+| Metric | Target |
+|----------|---------|
+| Dashboard Load Time | < 3 Seconds |
+| API Response Time | < 500 ms |
+| Payroll Generation | < 30 Seconds |
+| Invoice Generation | < 15 Seconds |
 
-### Salary Components
+Supported Scale:
 
-* Basic
-* HRA
-* Conveyance
-* Tea Allowance
-
-### Attendance Processing
-
-* Present = 1 Day
-* Half Day = 0.5 Day
-* Absent = 0 Day
-
-### Overtime Calculation
-
-* Supports 0.5-hour increments
-* Configurable OT Limits
-* Automatic OT Wage Calculation
-
-### Statutory Calculations
-
-#### PF
-
-* Employee PF
-* Employer PF
-* PF Admin Charges
-
-#### ESIC
-
-* Employee ESIC
-* Employer ESIC
-
-#### Professional Tax
-
-* Configurable Slabs
-
-### Payroll Freeze
-
-After payroll generation:
-
-* No edits allowed
-* No regeneration allowed
-* Historical payroll remains immutable
+- 500+ Employees
+- 100+ Contracts
+- Multiple Clients
+- Multi-Year Payroll History
 
 ---
 
-## Invoice Engine
+# 🚀 Installation
 
-Invoice calculation includes:
+## Clone Repository
 
-* Payroll Cost
-* Employer PF
-* PF Admin Charges
-* Employer ESIC
-* Service Charges
-* CGST
-* SGST
+```bash
+git clone https://github.com/yourusername/workforce360.git
 
-Invoice features:
+cd workforce360
+```
 
-* Preview Before Generation
-* PDF Generation
-* Freeze Mechanism
-* Historical Preservation
+## Install Frontend
 
----
+```bash
+cd frontend
 
-## Security Features
+npm install
+```
 
-* JWT Authentication
-* bcrypt Password Hashing
-* Role-Based Access Control
-* Route Protection
-* Input Validation
-* Request Sanitization
-* Environment Variable Security
-* HTTPS Deployment
-* Secure File Uploads
+## Install Backend
 
----
+```bash
+cd backend
 
-## Environment Variables
+npm install
+```
+
+## Configure Environment Variables
 
 ```env
 DATABASE_URL=
@@ -465,35 +364,7 @@ CLOUDINARY_API_SECRET=
 NODE_ENV=production
 ```
 
----
-
-## Installation
-
-### Clone Repository
-
-```bash
-git clone https://github.com/yourusername/workforce360.git
-
-cd workforce360
-```
-
-### Install Frontend
-
-```bash
-cd frontend
-
-npm install
-```
-
-### Install Backend
-
-```bash
-cd backend
-
-npm install
-```
-
-### Setup Database
+## Database Setup
 
 ```bash
 npx prisma migrate dev
@@ -501,13 +372,13 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-### Start Backend
+## Run Backend
 
 ```bash
 npm run dev
 ```
 
-### Start Frontend
+## Run Frontend
 
 ```bash
 npm run dev
@@ -515,86 +386,106 @@ npm run dev
 
 ---
 
-## Development Workflow
+# 📸 Screenshots
 
-Recommended implementation order:
+## Login Page
 
-1. Authentication
-2. Employee Management
-3. Document Management
-4. Attendance
-5. Payroll
-6. Payslips
-7. Clients
-8. Contracts
-9. Invoices
-10. Expenses
-11. Reports
-12. Settings
-13. Testing
-14. Deployment
+![Login](docs/screenshots/login.png)
 
----
+## Admin Dashboard
 
-## Performance Targets
+![Dashboard](docs/screenshots/dashboard.png)
 
-* Dashboard Load Time < 3 Seconds
-* API Response Time < 500ms
-* Payroll Generation < 30 Seconds
-* Invoice Generation < 15 Seconds
+## Employee Management
 
-Supported Scale:
+![Employees](docs/screenshots/employees.png)
 
-* 500+ Employees
-* 100+ Contracts
-* Multiple Clients
-* 5+ Years Historical Payroll Data
+## Payroll Module
+
+![Payroll](docs/screenshots/payroll.png)
+
+## Invoice Generation
+
+![Invoices](docs/screenshots/invoices.png)
 
 ---
 
-## Future Enhancements
+# 🗺️ Development Roadmap
 
-* Mobile Application
-* SMS Notifications
-* Email Notifications
-* QR Attendance
-* Biometric Integration
-* Leave Management
-* Multi-Admin Support
-* Client Portal
-* AI Workforce Insights
-* Advanced Financial Analytics
-* Cloud Backup Automation
+## MVP
 
----
-
-## MVP Status
-
-### Completed Modules
-
-* Authentication
-* Employee Management
-* Document Management
-* Attendance Management
-* Payroll Engine
-* Payslip Generation
-* Client Management
-* Contract Management
-* Invoice Generation
-* Expense Management
-* Reports & Analytics
-* Settings Management
+- [x] Authentication
+- [x] Employee Management
+- [x] Document Management
+- [x] Attendance Tracking
+- [x] Payroll Engine
+- [x] Payslip Generation
+- [x] Client Management
+- [x] Contract Management
+- [x] Invoice Generation
+- [x] Expense Management
+- [x] Reports & Analytics
+- [x] Settings Management
+- [x] Deployment
 
 ---
 
-## Business Goal
+# 🔮 Future Enhancements
 
-WorkForce360 transforms manual workforce administration, payroll processing, client billing, and financial reporting into a centralized digital platform that improves operational efficiency, payroll accuracy, business visibility, and record management for staffing agencies.
+- Mobile Application
+- QR Attendance
+- Biometric Attendance
+- SMS Notifications
+- Email Notifications
+- Leave Management
+- Multi-Admin Support
+- Client Portal
+- AI Workforce Insights
+- Advanced Analytics
+- Automated Tax Reports
 
 ---
 
-## License
+# 🎯 Business Impact
 
-This project is developed as a workforce management solution for staffing agencies.
+WorkForce360 helps staffing agencies:
 
-© 2026 WorkForce360. All Rights Reserved.
+✅ Reduce Payroll Processing Time by 80%
+
+✅ Reduce Invoice Generation Time by 80%
+
+✅ Eliminate Manual Calculation Errors
+
+✅ Centralize Workforce Data
+
+✅ Improve Financial Visibility
+
+✅ Preserve Historical Payroll & Invoice Records
+
+✅ Automate Workforce Operations
+
+---
+
+# 🤝 Contributing
+
+Contributions, suggestions, and improvements are welcome.
+
+Fork the repository and create a pull request with your proposed changes.
+
+---
+
+# 📜 License
+
+This project is licensed under the MIT License.
+
+---
+
+<div align="center">
+
+### WorkForce360
+
+Modern Workforce Management for Staffing Agencies
+
+Built with ❤️ using Next.js, Express.js, PostgreSQL & Prisma
+
+</div>
