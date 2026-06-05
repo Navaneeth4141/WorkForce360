@@ -142,7 +142,16 @@ export default function AttendancePage() {
 
       // 1. Fetch active employees if not fetched (limit 1000 to cover all active workers)
       const empRes = await API.get('/employees?status=ACTIVE&limit=1000');
-      setEmployees(empRes.data.employees);
+      
+      const lastDayOfRegMonth = new Date(regYear, regMonth, 0);
+      const lastDayUtc = Date.UTC(lastDayOfRegMonth.getFullYear(), lastDayOfRegMonth.getMonth(), lastDayOfRegMonth.getDate());
+      
+      const filteredEmps = empRes.data.employees.filter((emp) => {
+        const d = new Date(emp.joiningDate);
+        const joinDateUtc = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+        return joinDateUtc <= lastDayUtc;
+      });
+      setEmployees(filteredEmps);
 
       // 2. Compute date bounds for the selected month
       const startStr = `${regYear}-${String(regMonth).padStart(2, '0')}-01`;
@@ -263,10 +272,32 @@ export default function AttendancePage() {
 
   // Calculate monthly summary statistics for a worker
   const getWorkerSummary = (empId) => {
+    const emp = employees.find(e => e.id === empId);
     const workerLogs = monthLogs.filter((l) => l.employeeId === empId);
     const present = workerLogs.filter((l) => l.attendanceStatus === 'PRESENT').length;
     const halfDay = workerLogs.filter((l) => l.attendanceStatus === 'HALF_DAY').length;
-    const absent = workerLogs.filter((l) => l.attendanceStatus === 'ABSENT').length;
+    
+    let absent = workerLogs.filter((l) => l.attendanceStatus === 'ABSENT').length;
+    
+    if (emp) {
+      const totalDays = new Date(regYear, regMonth, 0).getDate();
+      for (let day = 1; day <= totalDays; day++) {
+        const dayStr = String(day).padStart(2, '0');
+        const monthStr = String(regMonth).padStart(2, '0');
+        const currentDateStr = `${regYear}-${monthStr}-${dayStr}`;
+
+        const normalizeDate = (dVal) => {
+          const d = new Date(dVal);
+          return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+        };
+        
+        const isBeforeJoining = normalizeDate(currentDateStr) < normalizeDate(emp.joiningDate);
+        if (isBeforeJoining) {
+          absent += 1;
+        }
+      }
+    }
+
     const ot = workerLogs.reduce((sum, l) => sum + parseFloat(l.overtimeHours || 0.0), 0.0);
     return { present, halfDay, absent, ot };
   };
@@ -557,8 +588,8 @@ export default function AttendancePage() {
                             let char = '-';
 
                             if (isBeforeJoining) {
-                              badgeColor = 'bg-slate-50/70 text-slate-300 border border-transparent cursor-not-allowed';
-                              char = 'N/A';
+                              badgeColor = 'bg-red-50 text-red-700 border border-red-200';
+                              char = 'A';
                             } else if (status === 'PRESENT') {
                               badgeColor = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
                               char = 'P';
@@ -574,7 +605,7 @@ export default function AttendancePage() {
                               <td 
                                 key={day} 
                                 className="p-1 text-center border-r border-slate-100"
-                                title={isBeforeJoining ? 'Employee not joined yet' : (log ? `Date: ${day}/${regMonth}, Status: ${status}${ot > 0 ? `, OT: +${ot} hrs` : ''}${remarks ? `, Note: ${remarks}` : ''}` : `No entry for day ${day}`)}
+                                title={isBeforeJoining ? 'Absent (Auto-marked: Before joining date)' : (log ? `Date: ${day}/${regMonth}, Status: ${status}${ot > 0 ? `, OT: +${ot} hrs` : ''}${remarks ? `, Note: ${remarks}` : ''}` : `No entry for day ${day}`)}
                               >
                                 <span className={`inline-flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-extrabold ${badgeColor}`}>
                                   {char}
@@ -610,7 +641,6 @@ export default function AttendancePage() {
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-full mr-1.5"></span> P = Present (1.0)</span>
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-amber-500 rounded-full mr-1.5"></span> H = Half Day (0.5)</span>
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-red-500 rounded-full mr-1.5"></span> A = Absent (0.0)</span>
-                <span className="flex items-center"><span className="w-2.5 h-2.5 bg-slate-200 rounded-full mr-1.5"></span> N/A = Not Joined</span>
                 <span className="flex items-center"><span className="w-2.5 h-2.5 bg-slate-300 rounded-full mr-1.5"></span> - = No record</span>
               </div>
               <span className="italic font-medium">Hover over status letters for details, remarks, and overtime hours.</span>
