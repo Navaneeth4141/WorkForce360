@@ -20,12 +20,34 @@ import {
 } from 'lucide-react';
  
 export default function AdminProfilePage() {
-  const { user, changePassword } = useAuth();
+  const { user, changePassword, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [activeTab, setActiveTab] = useState('company');
+
+  const handleResetDatabase = async () => {
+    if (!confirm("WARNING: This will completely delete all data in the database (employees, attendance, payroll, expenses, invoices, etc.) but preserve the structure and restore the default admin login ('admin' / 'elitestaffing').\n\nAre you sure you want to proceed?")) {
+      return;
+    }
+
+    try {
+      setResetLoading(true);
+      setErrorMsg('');
+      setSuccessMsg('');
+
+      await API.post('/settings/reset-database');
+      alert("Database reset completed successfully. You will now be logged out. Use default credentials 'admin' / 'elitestaffing' to log back in.");
+      logout();
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.response?.data?.error?.message || 'Failed to reset database.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
  
   // Company Profile State
   const [companyName, setCompanyName] = useState('');
@@ -205,6 +227,19 @@ export default function AdminProfilePage() {
                   <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="line-clamp-2">{address || 'N/A'}</span>
                 </div>
+              </div>
+ 
+              {/* Danger Zone */}
+              <div className="w-full border-t border-red-100 mt-6 pt-6 text-left">
+                <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider block mb-2">Danger Zone</span>
+                <button
+                  type="button"
+                  onClick={handleResetDatabase}
+                  disabled={resetLoading}
+                  className="w-full py-2.5 bg-red-50 hover:bg-red-100 border border-red-100 hover:border-red-200 text-red-600 hover:text-red-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center disabled:opacity-50"
+                >
+                  {resetLoading ? 'Resetting Database...' : 'Delete DataBase'}
+                </button>
               </div>
             </div>
  

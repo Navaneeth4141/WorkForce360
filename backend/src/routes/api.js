@@ -10,7 +10,7 @@ import { createClient, getClients, updateClient, deactivateClient, createContrac
 import { generateInvoice, freezeInvoice, getInvoices, getInvoiceById } from '../controllers/invoiceController.js';
 import { createExpense, getExpenses, getExpenseCategories, createExpenseCategory } from '../controllers/expenseController.js';
 import { getPayrollReport, getAttendanceReport, getRevenueReport, getProfitReport } from '../controllers/reportsController.js';
-import { getSettings, updateSettings } from '../controllers/settingsController.js';
+import { getSettings, updateSettings, resetDatabase } from '../controllers/settingsController.js';
 
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
@@ -105,5 +105,6 @@ router.get('/reports/profit', authenticateToken, requireRole(['ADMIN']), getProf
 // ==========================================
 router.get('/settings', authenticateToken, getSettings);
 router.put('/settings', authenticateToken, requireRole(['ADMIN']), updateSettings);
+router.post('/settings/reset-database', authenticateToken, requireRole(['ADMIN']), resetDatabase);
 
 export default router;
