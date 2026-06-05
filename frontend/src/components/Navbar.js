@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext.js';
 import { LogOut, User as UserIcon, Bell, Menu } from 'lucide-react';
 
@@ -72,9 +73,17 @@ export default function Navbar({ onMenuToggle, sidebarOpen }) {
                 </div>
                 
                 <div className="py-1">
+                  <Link
+                    href="/profile"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors font-medium"
+                  >
+                    <UserIcon className="w-4 h-4 mr-3 shrink-0 text-slate-400" />
+                    Company Profile
+                  </Link>
                   <button
                     onClick={logout}
-                    className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium border-t border-slate-50"
                   >
                     <LogOut className="w-4 h-4 mr-3 shrink-0" />
                     Logout

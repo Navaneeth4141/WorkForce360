@@ -16,7 +16,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  User
 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
@@ -32,6 +33,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'Invoices', path: '/invoices', icon: FileSignature },
     { name: 'Expenses', path: '/expenses', icon: DollarSign },
     { name: 'Reports', path: '/reports', icon: TrendingUp },
+    { name: 'Profile', path: '/profile', icon: User },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
