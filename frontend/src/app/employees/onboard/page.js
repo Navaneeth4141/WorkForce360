@@ -75,9 +75,6 @@ export default function OnboardPage() {
       if (!personal.age || parseInt(personal.age) <= 0) {
         errors.age = 'Valid positive age is required';
       }
-      if (!personal.dob) {
-        errors.dob = 'Date of Birth is required';
-      }
       if (!personal.designationId) {
         errors.designationId = 'Designation is required';
       }
@@ -103,10 +100,10 @@ export default function OnboardPage() {
       if (!personal.joiningDate) {
         errors.joiningDate = 'Joining Date is required';
       }
-      if (!personal.aadharNumber.trim()) {
-        errors.aadharNumber = 'Aadhaar Number is required';
-      } else if (!/^\d{12}$/.test(personal.aadharNumber.trim())) {
-        errors.aadharNumber = 'Aadhaar number must be exactly 12 digits';
+      if (personal.aadharNumber && personal.aadharNumber.trim()) {
+        if (!/^\d{12}$/.test(personal.aadharNumber.trim())) {
+          errors.aadharNumber = 'Aadhaar number must be exactly 12 digits';
+        }
       }
       if (!personal.pfNumber || !personal.pfNumber.trim()) {
         errors.pfNumber = 'PF Account Number is required';
@@ -368,7 +365,7 @@ export default function OnboardPage() {
                   </div>
  
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Date of Birth *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">Date of Birth (Optional)</label>
                      <input
                        type="date"
                        value={personal.dob}
@@ -462,7 +459,7 @@ export default function OnboardPage() {
                    </div>
  
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Aadhaar Card Number *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">Aadhaar Card Number (Optional)</label>
                      <input
                        type="text"
                        value={personal.aadharNumber}

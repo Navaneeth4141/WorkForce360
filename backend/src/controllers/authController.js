@@ -191,8 +191,10 @@ export async function resetPassword(req, res) {
       return res.status(404).json({ error: { message: 'Target user not found' } });
     }
 
-    // Default password reset to "ESS@001" (as defined in specs)
-    const defaultPassword = 'ESS@001';
+    // Default password reset dynamically (e.g., ESS001 -> ESS@001)
+    const defaultPassword = employeeId.startsWith('ESS') 
+      ? employeeId.replace('ESS', 'ESS@') 
+      : `${employeeId}@123`;
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
     await prisma.user.update({

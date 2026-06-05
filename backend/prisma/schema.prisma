@@ -78,7 +78,7 @@ model Employee {
   employeeCode      String            @unique @map("employee_code") // matches User.employeeId
   fullName          String            @map("full_name")
   age               Int
-  dob               DateTime
+  dob               DateTime?
   nationality       String
   gender            String
   religion          String
@@ -86,7 +86,7 @@ model Employee {
   email             String?
   presentAddress    String?           @map("present_address")
   permanentAddress  String?           @map("permanent_address")
-  aadharNumber      String            @map("aadhar_number")
+  aadharNumber      String?           @map("aadhar_number")
   pfNumber          String?           @map("pf_number")
   esicNumber        String?           @map("esic_number")
   joiningDate       DateTime          @map("joining_date")

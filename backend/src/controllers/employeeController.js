@@ -38,7 +38,7 @@ export async function createEmployee(req, res) {
   } = req.body;
 
   // Validation: Check required personal info
-  if (!fullName || !dob || !designationId || !joiningDate || !aadharNumber) {
+  if (!fullName || !designationId || !joiningDate) {
     return res.status(400).json({ error: { message: 'Missing required employee personal information' } });
   }
 
@@ -66,8 +66,10 @@ export async function createEmployee(req, res) {
       }
       const employeeCode = `ESS${String(nextNumber).padStart(3, '0')}`;
 
-      // 2. Create User account with default password "ESS@001"
-      const defaultPassword = 'ESS@001';
+      // 2. Create User account with dynamic default password (e.g. ESS001 -> ESS@001)
+      const defaultPassword = employeeCode.startsWith('ESS') 
+        ? employeeCode.replace('ESS', 'ESS@') 
+        : `${employeeCode}@123`;
       const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
       const user = await tx.user.create({
@@ -116,7 +118,7 @@ export async function createEmployee(req, res) {
           employeeCode,
           fullName,
           age: parseInt(age, 10) || 0,
-          dob: new Date(dob),
+          dob: dob ? new Date(dob) : null,
           nationality,
           gender,
           religion,
@@ -343,7 +345,7 @@ export async function updateEmployee(req, res) {
         data: {
           fullName,
           age: age ? parseInt(age, 10) : undefined,
-          dob: dob ? new Date(dob) : undefined,
+          dob: dob ? new Date(dob) : (dob === null || dob === '' ? null : undefined),
           nationality,
           gender,
           religion,

@@ -90,9 +90,12 @@ export default function EmployeesPage() {
     }
   };
 
-  // Trigger password reset to ESS@001
+  // Trigger password reset
   const handleResetPassword = async (code) => {
-    if (!confirm(`Are you sure you want to reset password for employee ${code} to default "ESS@001"?`)) return;
+    const expectedPassword = code.startsWith('ESS') 
+      ? code.replace('ESS', 'ESS@') 
+      : `${code}@123`;
+    if (!confirm(`Are you sure you want to reset password for employee ${code} to default "${expectedPassword}"?`)) return;
     try {
       const res = await API.post('/auth/reset-password', { employeeId: code });
       alert(`Password reset successful. New default password: ${res.data.defaultPassword}`);
