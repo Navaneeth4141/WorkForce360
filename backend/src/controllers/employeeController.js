@@ -32,9 +32,9 @@ export async function createEmployee(req, res) {
     // Step 5 (Salary details)
     fixedGross,
     teaAllowance,
-    basicPercentage,
-    hraPercentage,
-    conveyancePercentage,
+    fixedBasic,
+    fixedHra,
+    fixedConveyance,
   } = req.body;
 
   // Validation: Check required personal info
@@ -42,11 +42,16 @@ export async function createEmployee(req, res) {
     return res.status(400).json({ error: { message: 'Missing required employee personal information' } });
   }
 
-  // Validate salary percentages if provided
+  // Validate salary components if provided
   if (fixedGross !== undefined && fixedGross !== null) {
-    const totalPercentage = parseFloat(basicPercentage || 40) + parseFloat(hraPercentage || 30) + parseFloat(conveyancePercentage || 30);
-    if (Math.abs(totalPercentage - 100) > 0.01) {
-      return res.status(400).json({ error: { message: 'Salary structure percentages must sum up to exactly 100%' } });
+    const gross = parseFloat(fixedGross || 0);
+    const tea = parseFloat(teaAllowance || 0);
+    const basic = parseFloat(fixedBasic || 0);
+    const hra = parseFloat(fixedHra || 0);
+    const conveyance = parseFloat(fixedConveyance || 0);
+    const sum = basic + hra + conveyance + tea;
+    if (Math.abs(sum - gross) > 0.01) {
+      return res.status(400).json({ error: { message: 'Salary component total must equal Fixed Gross Salary.' } });
     }
   }
 
@@ -82,30 +87,16 @@ export async function createEmployee(req, res) {
         },
       });
 
-      // 3. Calculate salary structures if provided
+      // 3. Create salary structure if provided
       let salaryStructuresCreate = undefined;
       if (fixedGross !== undefined && fixedGross !== null) {
-        const gross = parseFloat(fixedGross);
-        const tea = parseFloat(teaAllowance || 0);
-        const basicPct = parseFloat(basicPercentage || 40);
-        const hraPct = parseFloat(hraPercentage || 30);
-        const convPct = parseFloat(conveyancePercentage || 30);
-
-        const remainingGross = gross - tea;
-        const fixedBasic = remainingGross * (basicPct / 100);
-        const fixedHra = remainingGross * (hraPct / 100);
-        const fixedConveyance = remainingGross * (convPct / 100);
-
         salaryStructuresCreate = {
           create: {
-            fixedGross: gross,
-            teaAllowance: tea,
-            basicPercentage: basicPct,
-            hraPercentage: hraPct,
-            conveyancePercentage: convPct,
-            fixedBasic,
-            fixedHra,
-            fixedConveyance,
+            fixedGross: parseFloat(fixedGross),
+            teaAllowance: parseFloat(teaAllowance || 0),
+            fixedBasic: parseFloat(fixedBasic || 0),
+            fixedHra: parseFloat(fixedHra || 0),
+            fixedConveyance: parseFloat(fixedConveyance || 0),
             effectiveFrom: new Date(joiningDate),
             createdBy: req.user?.id || null,
           }
@@ -321,14 +312,19 @@ export async function updateEmployee(req, res) {
     fullName, age, dob, nationality, gender, religion, phoneNumber, email,
     presentAddress, permanentAddress, pfNumber, esicNumber,
     designationId, status, bankDetails,
-    fixedGross, teaAllowance, basicPercentage, hraPercentage, conveyancePercentage,
+    fixedGross, teaAllowance, fixedBasic, fixedHra, fixedConveyance,
   } = req.body;
 
-  // Validate salary percentages if provided
+  // Validate salary components if provided
   if (fixedGross !== undefined && fixedGross !== null) {
-    const totalPercentage = parseFloat(basicPercentage || 40) + parseFloat(hraPercentage || 30) + parseFloat(conveyancePercentage || 30);
-    if (Math.abs(totalPercentage - 100) > 0.01) {
-      return res.status(400).json({ error: { message: 'Salary structure percentages must sum up to exactly 100%' } });
+    const gross = parseFloat(fixedGross || 0);
+    const tea = parseFloat(teaAllowance || 0);
+    const basic = parseFloat(fixedBasic || 0);
+    const hra = parseFloat(fixedHra || 0);
+    const conveyance = parseFloat(fixedConveyance || 0);
+    const sum = basic + hra + conveyance + tea;
+    if (Math.abs(sum - gross) > 0.01) {
+      return res.status(400).json({ error: { message: 'Salary component total must equal Fixed Gross Salary.' } });
     }
   }
 
@@ -387,14 +383,9 @@ export async function updateEmployee(req, res) {
       if (fixedGross !== undefined && fixedGross !== null) {
         const gross = parseFloat(fixedGross);
         const tea = parseFloat(teaAllowance || 0);
-        const basicPct = parseFloat(basicPercentage || 40);
-        const hraPct = parseFloat(hraPercentage || 30);
-        const convPct = parseFloat(conveyancePercentage || 30);
-
-        const remainingGross = gross - tea;
-        const fixedBasic = remainingGross * (basicPct / 100);
-        const fixedHra = remainingGross * (hraPct / 100);
-        const fixedConveyance = remainingGross * (convPct / 100);
+        const basic = parseFloat(fixedBasic || 0);
+        const hra = parseFloat(fixedHra || 0);
+        const conveyance = parseFloat(fixedConveyance || 0);
 
         // Check if a salary structure record already exists for this employee
         const existingStructure = await tx.salaryStructure.findFirst({
@@ -408,12 +399,9 @@ export async function updateEmployee(req, res) {
             data: {
               fixedGross: gross,
               teaAllowance: tea,
-              basicPercentage: basicPct,
-              hraPercentage: hraPct,
-              conveyancePercentage: convPct,
-              fixedBasic,
-              fixedHra,
-              fixedConveyance,
+              fixedBasic: basic,
+              fixedHra: hra,
+              fixedConveyance: conveyance,
               updatedBy: req.user.id,
             },
           });
@@ -423,12 +411,9 @@ export async function updateEmployee(req, res) {
               employeeId: id,
               fixedGross: gross,
               teaAllowance: tea,
-              basicPercentage: basicPct,
-              hraPercentage: hraPct,
-              conveyancePercentage: convPct,
-              fixedBasic,
-              fixedHra,
-              fixedConveyance,
+              fixedBasic: basic,
+              fixedHra: hra,
+              fixedConveyance: conveyance,
               effectiveFrom: existing.joiningDate || new Date(),
               createdBy: req.user.id,
             },

@@ -42,7 +42,7 @@ export default function EmployeesPage() {
     fullName: '', phoneNumber: '', email: '', presentAddress: '', permanentAddress: '',
     pfNumber: '', esicNumber: '', designationId: '', status: 'ACTIVE',
     bankDetails: { bankName: '', accountHolderName: '', accountNumber: '', ifscCode: '', branchName: '' },
-    fixedGross: '', teaAllowance: '500', basicPercentage: '40', hraPercentage: '30', conveyancePercentage: '30'
+    fixedGross: '', teaAllowance: '500', fixedBasic: '', fixedHra: '', fixedConveyance: ''
   });
 
   const [message, setMessage] = useState('');
@@ -140,9 +140,9 @@ export default function EmployeesPage() {
       },
       fixedGross: activeSalary.fixedGross || '',
       teaAllowance: activeSalary.teaAllowance || '500',
-      basicPercentage: activeSalary.basicPercentage || '40',
-      hraPercentage: activeSalary.hraPercentage || '30',
-      conveyancePercentage: activeSalary.conveyancePercentage || '30'
+      fixedBasic: activeSalary.fixedBasic || '',
+      fixedHra: activeSalary.fixedHra || '',
+      fixedConveyance: activeSalary.fixedConveyance || ''
     });
   };
 
@@ -165,15 +165,17 @@ export default function EmployeesPage() {
       }
     }
     
-    // Check if salary parameters are provided and validate percentage sum to 100%
+    // Check if salary parameters are provided and validate component sum equals gross
     if (editForm.fixedGross !== '') {
-      const basicPct = parseFloat(editForm.basicPercentage || 0);
-      const hraPct = parseFloat(editForm.hraPercentage || 0);
-      const convPct = parseFloat(editForm.conveyancePercentage || 0);
-      const totalPct = basicPct + hraPct + convPct;
+      const gross = parseFloat(editForm.fixedGross || 0);
+      const tea = parseFloat(editForm.teaAllowance || 0);
+      const basic = parseFloat(editForm.fixedBasic || 0);
+      const hra = parseFloat(editForm.fixedHra || 0);
+      const conveyance = parseFloat(editForm.fixedConveyance || 0);
+      const sum = basic + hra + conveyance + tea;
 
-      if (Math.abs(totalPct - 100) > 0.01) {
-        alert('Salary breakdown percentages (Basic + HRA + Conveyance) must sum up to exactly 100%');
+      if (Math.abs(sum - gross) > 0.01) {
+        alert('Salary component total must equal Fixed Gross Salary.');
         return;
       }
     }
@@ -183,9 +185,9 @@ export default function EmployeesPage() {
         ...editForm,
         fixedGross: editForm.fixedGross !== '' ? parseFloat(editForm.fixedGross) : null,
         teaAllowance: editForm.teaAllowance !== '' ? parseFloat(editForm.teaAllowance) : 0,
-        basicPercentage: editForm.basicPercentage !== '' ? parseFloat(editForm.basicPercentage) : 40,
-        hraPercentage: editForm.hraPercentage !== '' ? parseFloat(editForm.hraPercentage) : 30,
-        conveyancePercentage: editForm.conveyancePercentage !== '' ? parseFloat(editForm.conveyancePercentage) : 30,
+        fixedBasic: editForm.fixedBasic !== '' ? parseFloat(editForm.fixedBasic) : 0,
+        fixedHra: editForm.fixedHra !== '' ? parseFloat(editForm.fixedHra) : 0,
+        fixedConveyance: editForm.fixedConveyance !== '' ? parseFloat(editForm.fixedConveyance) : 0,
       };
 
       await API.put(`/employees/${editEmp.id}`, payload);
@@ -462,9 +464,9 @@ export default function EmployeesPage() {
                               <div key={idx} className="space-y-1.5">
                                 <div className="flex justify-between"><span className="text-slate-500">Fixed Gross:</span><span className="font-semibold text-slate-800">Rs. {s.fixedGross}</span></div>
                                 <div className="flex justify-between"><span className="text-slate-500">Tea Allowance:</span><span>Rs. {s.teaAllowance}</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500">Basic (Fixed / %):</span><span>Rs. {s.fixedBasic} ({s.basicPercentage}%)</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500">HRA (Fixed / %):</span><span>Rs. {s.fixedHra} ({s.hraPercentage}%)</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500">Conveyance (Fixed / %):</span><span>Rs. {s.fixedConveyance} ({s.conveyancePercentage}%)</span></div>
+                                <div className="flex justify-between"><span className="text-slate-500">Basic:</span><span>Rs. {s.fixedBasic}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-500">HRA:</span><span>Rs. {s.fixedHra}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-500">Conveyance:</span><span>Rs. {s.fixedConveyance}</span></div>
                               </div>
                             ))}
                           </div>
@@ -743,37 +745,48 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Basic Salary % *</label>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Fixed Basic *</label>
                       <input
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         required
-                        value={editForm.basicPercentage}
-                        onChange={(e) => setEditForm({ ...editForm, basicPercentage: e.target.value })}
+                        value={editForm.fixedBasic}
+                        onChange={(e) => setEditForm({ ...editForm, fixedBasic: e.target.value })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">HRA % *</label>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Fixed HRA *</label>
                       <input
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         required
-                        value={editForm.hraPercentage}
-                        onChange={(e) => setEditForm({ ...editForm, hraPercentage: e.target.value })}
+                        value={editForm.fixedHra}
+                        onChange={(e) => setEditForm({ ...editForm, fixedHra: e.target.value })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Conveyance % *</label>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Fixed Conveyance *</label>
                       <input
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         required
-                        value={editForm.conveyancePercentage}
-                        onChange={(e) => setEditForm({ ...editForm, conveyancePercentage: e.target.value })}
+                        value={editForm.fixedConveyance}
+                        onChange={(e) => setEditForm({ ...editForm, fixedConveyance: e.target.value })}
                         className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
                       />
+                    </div>
+
+                    <div className="col-span-2 text-xs text-slate-500 pt-2 border-t border-slate-100 space-y-1">
+                      <div>
+                        Component Total: Rs. {parseFloat(editForm.fixedBasic || 0) + parseFloat(editForm.fixedHra || 0) + parseFloat(editForm.fixedConveyance || 0) + parseFloat(editForm.teaAllowance || 0)}
+                      </div>
+                      {editForm.fixedGross && Math.abs((parseFloat(editForm.fixedBasic || 0) + parseFloat(editForm.fixedHra || 0) + parseFloat(editForm.fixedConveyance || 0) + parseFloat(editForm.teaAllowance || 0)) - parseFloat(editForm.fixedGross || 0)) > 0.01 && (
+                        <div className="text-red-500 font-semibold">
+                          Difference from Gross: Rs. {parseFloat(editForm.fixedGross || 0) - (parseFloat(editForm.fixedBasic || 0) + parseFloat(editForm.fixedHra || 0) + parseFloat(editForm.fixedConveyance || 0) + parseFloat(editForm.teaAllowance || 0))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

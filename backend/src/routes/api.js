@@ -5,7 +5,7 @@ import { authenticateToken, requireRole } from '../middleware/auth.js';
 import { login, logout, changePassword, resetPassword } from '../controllers/authController.js';
 import { createEmployee, getEmployees, getEmployeeById, updateEmployee, deactivateEmployee, getMyProfile, getMyAttendance, getMyPayroll } from '../controllers/employeeController.js';
 import { saveAttendance, getAttendance, getMonthlyAttendanceSummary } from '../controllers/attendanceController.js';
-import { generatePayroll, freezePayroll, getPayrollHistory, getPayrollBatchDetails } from '../controllers/payrollController.js';
+import { generatePayroll, freezePayroll, getPayrollHistory, getPayrollBatchDetails, unfreezePayroll } from '../controllers/payrollController.js';
 import { createClient, getClients, updateClient, deactivateClient, createContract, getContracts, updateContractStatus } from '../controllers/clientController.js';
 import { generateInvoice, freezeInvoice, getInvoices, getInvoiceById } from '../controllers/invoiceController.js';
 import { createExpense, getExpenses, getExpenseCategories, createExpenseCategory } from '../controllers/expenseController.js';
@@ -61,6 +61,7 @@ router.get('/attendance/monthly', authenticateToken, getMonthlyAttendanceSummary
 // ==========================================
 router.post('/payroll/generate', authenticateToken, requireRole(['ADMIN']), generatePayroll);
 router.post('/payroll/freeze', authenticateToken, requireRole(['ADMIN']), freezePayroll);
+router.post('/payroll/unfreeze', authenticateToken, requireRole(['ADMIN']), unfreezePayroll);
 router.get('/payroll/history', authenticateToken, getPayrollHistory);
 router.get('/payroll/:id', authenticateToken, getPayrollBatchDetails);
 

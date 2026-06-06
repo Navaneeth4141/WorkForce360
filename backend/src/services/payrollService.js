@@ -25,9 +25,9 @@
 export function calculateEmployeePayroll({
   fixedGross,
   teaAllowance,
-  basicPercentage = 40.0,
-  hraPercentage = 30.0,
-  conveyancePercentage = 30.0,
+  fixedBasic,
+  fixedHra,
+  fixedConveyance,
   presentDays,
   halfDays,
   absentDays,
@@ -37,27 +37,24 @@ export function calculateEmployeePayroll({
   pfRate = 12.0,
   pfAdminRate = 1.0,
 }) {
-  // Validate percentage rule: Basic % + HRA % + Conveyance % = 100%
-  const totalPercentage = parseFloat(basicPercentage) + parseFloat(hraPercentage) + parseFloat(conveyancePercentage);
-  if (Math.abs(totalPercentage - 100) > 0.01) {
-    throw new Error('Salary structure percentages must sum up to exactly 100%');
+  // Validate component sum rule: Basic + HRA + Conveyance + Tea Allowance = Gross
+  const sumComponents = parseFloat(fixedBasic) + parseFloat(fixedHra) + parseFloat(fixedConveyance) + parseFloat(teaAllowance);
+  if (Math.abs(sumComponents - fixedGross) > 0.01) {
+    throw new Error('Salary component total must equal Fixed Gross Salary.');
   }
 
   // 1. Calculate Fixed Breakdown (Section 2)
   const remainingGross = fixedGross - teaAllowance;
-  const fixedBasic = remainingGross * (basicPercentage / 100);
-  const fixedHra = remainingGross * (hraPercentage / 100);
-  const fixedConveyance = remainingGross * (conveyancePercentage / 100);
 
   // 2. Attendance & Net Payable Days (Section 3)
   const netPayableDays = presentDays + (halfDays * 0.5);
   const calculatedAbsentDays = totalDaysInMonth - netPayableDays;
 
   // 3. Earned Salary Calculations (Section 4)
-  const earnedBasic = (fixedBasic * netPayableDays) / totalDaysInMonth;
-  const earnedHra = (fixedHra * netPayableDays) / totalDaysInMonth;
-  const earnedConveyance = (fixedConveyance * netPayableDays) / totalDaysInMonth;
-  const earnedTeaAllowance = (teaAllowance * netPayableDays) / totalDaysInMonth;
+  const earnedBasic = Math.round((fixedBasic * netPayableDays) / totalDaysInMonth);
+  const earnedHra = Math.round((fixedHra * netPayableDays) / totalDaysInMonth);
+  const earnedConveyance = Math.round((fixedConveyance * netPayableDays) / totalDaysInMonth);
+  const earnedTeaAllowance = Math.round((teaAllowance * netPayableDays) / totalDaysInMonth);
 
   const earnedGross = earnedBasic + earnedHra + earnedConveyance + earnedTeaAllowance;
 
@@ -65,27 +62,27 @@ export function calculateEmployeePayroll({
   // OT Rate = ((Fixed Basic / 30) / 8) * 2
   const standardOtRate = ((fixedBasic / 30) / 8);
   const otHourlyRate = standardOtRate * 2;
-  const overtimeWages = otHourlyRate * overtimeHours;
+  const overtimeWages = Math.round(otHourlyRate * overtimeHours);
 
   // Special Allowance = Special Allowance Rate * Total OT Hours
   const specialAllowanceRate = standardOtRate;
-  const specialAllowance = specialAllowanceRate * overtimeHours;
+  const specialAllowance = Math.round(specialAllowanceRate * overtimeHours);
 
   // 5. Gross Pay (Section 7)
   const grossPay = earnedGross + overtimeWages + specialAllowance;
 
   // 6. PF Calculations (Section 8)
-  const pf = earnedBasic * (pfRate / 100);
-  const employerPf = earnedBasic * (pfRate / 100);
-  const employerPfAdmin = earnedBasic * (pfAdminRate / 100);
+  const pf = Math.round(earnedBasic * (pfRate / 100));
+  const employerPf = Math.round(earnedBasic * (pfRate / 100));
+  const employerPfAdmin = Math.round(earnedBasic * (pfAdminRate / 100));
 
   // 7. ESIC Calculations (Section 9)
   // Eligible only if Fixed Gross <= 21,000 (using fixed gross, not earned gross)
   let esic = 0.0;
   let employerEsic = 0.0;
   if (fixedGross <= 21000) {
-    esic = grossPay * 0.0075; // 0.75% of Gross Pay
-    employerEsic = grossPay * 0.0325; // 3.25% of Gross Pay
+    esic = Math.ceil(grossPay * 0.0075); // 0.75% of Gross Pay (Employee ESIC remains ceiling/ROUNDUP)
+    employerEsic = Math.round(grossPay * 0.0325); // 3.25% of Gross Pay
   }
 
   // 8. Professional Tax (PT) (Section 10)
@@ -95,7 +92,7 @@ export function calculateEmployeePayroll({
     const sortedSlabs = [...ptSlabs].sort((a, b) => a.maxGross - b.maxGross);
     for (const slab of sortedSlabs) {
       if (grossPay <= slab.maxGross) {
-        professionalTax = slab.pt;
+        professionalTax = Math.round(slab.pt);
         break;
       }
     }

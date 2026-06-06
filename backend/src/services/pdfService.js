@@ -120,7 +120,8 @@ export function generatePayslipPdf({ payrollItem, employee, designation, setting
       doc.text(round(payrollItem.grossPay), 220, totalsTop, { align: 'right', width: 70 });
 
       doc.text('Total Deductions:', 310, totalsTop);
-      doc.text(round(payrollItem.pf + payrollItem.esic + payrollItem.professionalTax), 480, totalsTop, { align: 'right', width: 70 });
+      const totalDeductions = parseFloat(payrollItem.pf || 0) + parseFloat(payrollItem.esic || 0) + parseFloat(payrollItem.professionalTax || 0);
+      doc.text(round(totalDeductions), 480, totalsTop, { align: 'right', width: 70 });
 
       doc.moveDown(1.5);
       doc.lineWidth(1).strokeColor('#374151').moveTo(40, doc.y).lineTo(550, doc.y).stroke();
@@ -225,7 +226,8 @@ export function generateInvoicePdf({ invoiceBatch, contract, client, setting, in
       const summaryTop = doc.y;
       doc.font('Helvetica-Bold');
       doc.text('Invoice Base (Total CTC)', 50, summaryTop);
-      doc.text(round(item.payrollCost + item.employerPf + item.employerPfAdmin + item.employerEsic), 430, summaryTop, { align: 'right', width: 120 });
+      const invoiceBase = parseFloat(item.payrollCost || 0) + parseFloat(item.employerPf || 0) + parseFloat(item.employerPfAdmin || 0) + parseFloat(item.employerEsic || 0);
+      doc.text(round(invoiceBase), 430, summaryTop, { align: 'right', width: 120 });
 
       doc.font('Helvetica');
       doc.text(`Service Charges @ ${contract.serviceChargePercentage}%`, 50, summaryTop + 15);
@@ -233,7 +235,8 @@ export function generateInvoicePdf({ invoiceBatch, contract, client, setting, in
 
       doc.font('Helvetica-Bold');
       doc.text('Taxable Amount', 50, summaryTop + 30);
-      doc.text(round(item.payrollCost + item.employerPf + item.employerPfAdmin + item.employerEsic + item.serviceCharge), 430, summaryTop + 30, { align: 'right', width: 120 });
+      const taxableAmount = invoiceBase + parseFloat(item.serviceCharge || 0);
+      doc.text(round(taxableAmount), 430, summaryTop + 30, { align: 'right', width: 120 });
 
       doc.font('Helvetica');
       doc.text(`CGST @ ${contract.cgstPercentage}%`, 50, summaryTop + 45);

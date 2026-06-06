@@ -37,10 +37,10 @@ export default function OnboardPage() {
 
   const [salary, setSalary] = useState({
     fixedGross: '',
-    teaAllowance: '500', // default Rs 500
-    basicPercentage: '40',
-    hraPercentage: '30',
-    conveyancePercentage: '30'
+    fixedBasic: '',
+    fixedHra: '',
+    fixedConveyance: '',
+    teaAllowance: '500' // default Rs 500
   });
 
   const [documents, setDocuments] = useState({
@@ -115,9 +115,14 @@ export default function OnboardPage() {
       if (!salary.fixedGross || parseFloat(salary.fixedGross) <= 0) {
         errors.fixedGross = 'Fixed Gross Salary must be greater than 0';
       }
-      const sum = parseFloat(salary.basicPercentage) + parseFloat(salary.hraPercentage) + parseFloat(salary.conveyancePercentage);
-      if (Math.abs(sum - 100) > 0.01) {
-        errors.percentages = 'Salary percentages must sum to exactly 100%';
+      const gross = parseFloat(salary.fixedGross || 0);
+      const basic = parseFloat(salary.fixedBasic || 0);
+      const hra = parseFloat(salary.fixedHra || 0);
+      const conveyance = parseFloat(salary.fixedConveyance || 0);
+      const tea = parseFloat(salary.teaAllowance || 0);
+      const sum = basic + hra + conveyance + tea;
+      if (Math.abs(sum - gross) > 0.01) {
+        errors.percentages = 'Salary component total must equal Fixed Gross Salary.';
       }
     }
     setFormErrors(errors);
@@ -218,9 +223,9 @@ export default function OnboardPage() {
         // Step 5: Salary structure configuration
         fixedGross: parseFloat(salary.fixedGross),
         teaAllowance: parseFloat(salary.teaAllowance),
-        basicPercentage: parseFloat(salary.basicPercentage),
-        hraPercentage: parseFloat(salary.hraPercentage),
-        conveyancePercentage: parseFloat(salary.conveyancePercentage),
+        fixedBasic: parseFloat(salary.fixedBasic || 0),
+        fixedHra: parseFloat(salary.fixedHra || 0),
+        fixedConveyance: parseFloat(salary.fixedConveyance || 0),
         
         // Step 6: Documents
         documents: Object.entries(documents)
@@ -319,7 +324,7 @@ export default function OnboardPage() {
                   setFamily([]);
                   setEducation([]);
                   setHistory([]);
-                  setSalary({ fixedGross: '', teaAllowance: '500', basicPercentage: '40', hraPercentage: '30', conveyancePercentage: '30' });
+                  setSalary({ fixedGross: '', teaAllowance: '500', fixedBasic: '', fixedHra: '', fixedConveyance: '' });
                   setDocuments({ PHOTO: null, AADHAAR: null, PAN: null, PASSBOOK: null, JOINING_FORM: null, PF: null, ESIC: null });
                 }}
                 className="dashboard-btn-secondary"
@@ -753,36 +758,39 @@ export default function OnboardPage() {
 
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 space-y-4 mt-6">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Components Percentage Breakup</h4>
-                    <span className="text-xs text-slate-400 font-medium">Must equal 100% total</span>
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Components Breakup</h4>
+                    <span className="text-xs text-slate-400 font-medium">Basic + HRA + Conveyance + Tea = Gross</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-600 mb-1">Basic %</label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-1">Fixed Basic *</label>
                       <input
                         type="number"
-                        value={salary.basicPercentage}
-                        onChange={(e) => setSalary({ ...salary, basicPercentage: e.target.value })}
-                        className="block w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none"
+                        step="0.01"
+                        value={salary.fixedBasic}
+                        onChange={(e) => setSalary({ ...salary, fixedBasic: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none bg-white font-medium"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-600 mb-1">HRA %</label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-1">Fixed HRA *</label>
                       <input
                         type="number"
-                        value={salary.hraPercentage}
-                        onChange={(e) => setSalary({ ...salary, hraPercentage: e.target.value })}
-                        className="block w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none"
+                        step="0.01"
+                        value={salary.fixedHra}
+                        onChange={(e) => setSalary({ ...salary, fixedHra: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none bg-white font-medium"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-600 mb-1">Conveyance %</label>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-1">Fixed Conveyance *</label>
                       <input
                         type="number"
-                        value={salary.conveyancePercentage}
-                        onChange={(e) => setSalary({ ...salary, conveyancePercentage: e.target.value })}
-                        className="block w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none"
+                        step="0.01"
+                        value={salary.fixedConveyance}
+                        onChange={(e) => setSalary({ ...salary, fixedConveyance: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none bg-white font-medium"
                       />
                     </div>
                   </div>
@@ -791,25 +799,23 @@ export default function OnboardPage() {
                     <p className="text-red-500 text-xs mt-1 text-center font-medium">{formErrors.percentages}</p>
                   )}
 
-                  {/* Calculations Preview info */}
+                  {/* Calculations Preview & Live Validation info */}
                   {salary.fixedGross && (
                     <div className="border-t border-slate-200 pt-3 text-xs space-y-1.5 text-slate-600">
                       <div className="flex justify-between">
-                        <span>Remaining Gross (Fixed Gross - Tea Allowance):</span>
-                        <span className="font-bold text-slate-800">Rs. {salary.fixedGross - salary.teaAllowance}</span>
+                        <span>Component Total (Basic + HRA + Conveyance + Tea):</span>
+                        <span className="font-bold text-slate-800">
+                          Rs. {parseFloat(salary.fixedBasic || 0) + parseFloat(salary.fixedHra || 0) + parseFloat(salary.fixedConveyance || 0) + parseFloat(salary.teaAllowance || 0)}
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Calculated Fixed Basic:</span>
-                        <span>Rs. {Math.round((salary.fixedGross - salary.teaAllowance) * (salary.basicPercentage / 100))}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Calculated Fixed HRA:</span>
-                        <span>Rs. {Math.round((salary.fixedGross - salary.teaAllowance) * (salary.hraPercentage / 100))}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Calculated Fixed Conveyance:</span>
-                        <span>Rs. {Math.round((salary.fixedGross - salary.teaAllowance) * (salary.conveyancePercentage / 100))}</span>
-                      </div>
+                      {Math.abs((parseFloat(salary.fixedBasic || 0) + parseFloat(salary.fixedHra || 0) + parseFloat(salary.fixedConveyance || 0) + parseFloat(salary.teaAllowance || 0)) - parseFloat(salary.fixedGross || 0)) > 0.01 && (
+                        <div className="flex justify-between text-red-500 font-semibold">
+                          <span>Difference from Gross:</span>
+                          <span>
+                            Rs. {parseFloat(salary.fixedGross || 0) - (parseFloat(salary.fixedBasic || 0) + parseFloat(salary.fixedHra || 0) + parseFloat(salary.fixedConveyance || 0) + parseFloat(salary.teaAllowance || 0))}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -147,9 +147,9 @@ export async function generatePayroll(req, res) {
         const calc = calculateEmployeePayroll({
           fixedGross: parseFloat(salaryStructure.fixedGross),
           teaAllowance: parseFloat(salaryStructure.teaAllowance),
-          basicPercentage: parseFloat(salaryStructure.basicPercentage),
-          hraPercentage: parseFloat(salaryStructure.hraPercentage),
-          conveyancePercentage: parseFloat(salaryStructure.conveyancePercentage),
+          fixedBasic: parseFloat(salaryStructure.fixedBasic),
+          fixedHra: parseFloat(salaryStructure.fixedHra),
+          fixedConveyance: parseFloat(salaryStructure.fixedConveyance),
           presentDays,
           halfDays,
           absentDays,
@@ -385,3 +385,75 @@ export async function getPayrollBatchDetails(req, res) {
     return res.status(500).json({ error: { message: 'Internal server error' } });
   }
 }
+
+/**
+ * POST /api/payroll/unfreeze
+ * Unfreezes a payroll batch and deletes any generated payslips/invoices
+ */
+export async function unfreezePayroll(req, res) {
+  const { batchId } = req.body;
+
+  if (!batchId) {
+    return res.status(400).json({ error: { message: 'Batch ID is required' } });
+  }
+
+  try {
+    const batch = await prisma.payrollBatch.findUnique({
+      where: { id: batchId },
+    });
+
+    if (!batch) {
+      return res.status(404).json({ error: { message: 'Payroll batch not found' } });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete associated invoice items and batches to avoid FK constraints
+      const invoices = await tx.invoiceBatch.findMany({
+        where: { payrollBatchId: batch.id },
+      });
+
+      for (const inv of invoices) {
+        await tx.invoiceItem.deleteMany({ where: { invoiceBatchId: inv.id } });
+        await tx.invoiceBatch.delete({ where: { id: inv.id } });
+      }
+
+      // 2. Find associated payroll items
+      const items = await tx.payrollItem.findMany({
+        where: { payrollBatchId: batch.id },
+      });
+      const itemIds = items.map((it) => it.id);
+
+      // 3. Delete associated payslips
+      if (itemIds.length > 0) {
+        await tx.payslip.deleteMany({
+          where: { payrollItemId: { in: itemIds } },
+        });
+      }
+
+      // 4. Delete the batch and its items
+      await tx.payrollItem.deleteMany({
+        where: { payrollBatchId: batch.id },
+      });
+      await tx.payrollBatch.delete({
+        where: { id: batch.id },
+      });
+
+      // 5. Log action
+      await tx.auditLog.create({
+        data: {
+          userId: req.user.id,
+          action: 'Payroll Batch Unfreeze',
+          entityType: 'PayrollBatch',
+          entityId: batch.id,
+          description: `Admin unfroze and deleted payroll batch for month ${batch.payrollMonth}/${batch.payrollYear}`,
+        },
+      });
+    });
+
+    return res.json({ message: `Payroll batch for ${batch.payrollMonth}/${batch.payrollYear} unfrozen and removed from history successfully` });
+  } catch (error) {
+    console.error('Unfreeze payroll error:', error);
+    return res.status(500).json({ error: { message: 'Internal server error unfreezing payroll batch' } });
+  }
+}
+

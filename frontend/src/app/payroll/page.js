@@ -123,6 +123,36 @@ export default function PayrollPage() {
     }
   };
 
+  // Unfreeze batch and reset generator view for editing and recalculating
+  const handleUnfreezeBatch = async (batchId) => {
+    if (!confirm('Are you sure you want to unfreeze this payroll batch? This will permanently delete all generated payslip PDFs and associated invoice files, allowing you to edit attendance and recalculate.')) return;
+
+    try {
+      setLoading(true);
+      setErrorMsg('');
+      setSuccessMsg('');
+
+      const res = await API.post('/payroll/unfreeze', { batchId });
+      alert(res.data.message);
+
+      // Reload history list
+      await loadHistory();
+
+      // Pre-set the month/year in generator to the current batch's period
+      setMonth(selectedBatchDetails.payrollMonth);
+      setYear(selectedBatchDetails.payrollYear);
+
+      setSelectedBatchDetails(null);
+      setGenerateStep(1); // Set generator step back to setup
+      setActiveView('generate'); // Switch to generate panel
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error?.message || 'Failed to unfreeze payroll batch.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // View specific historical batch details
   const handleViewBatchDetails = async (batchId) => {
     try {
@@ -413,9 +443,17 @@ export default function PayrollPage() {
                       <h3 className="text-base font-bold text-slate-800">Run Details: {getMonthName(selectedBatchDetails.payrollMonth)} {selectedBatchDetails.payrollYear}</h3>
                       <p className="text-xs text-slate-400 mt-0.5">Generated on {new Date(selectedBatchDetails.payrollGeneratedAt).toLocaleString()}</p>
                     </div>
-                    <span className="text-xs font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full flex items-center">
-                      <Lock className="w-3.5 h-3.5 mr-1" /> Frozen
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full flex items-center">
+                        <Lock className="w-3.5 h-3.5 mr-1" /> Frozen
+                      </span>
+                      <button
+                        onClick={() => handleUnfreezeBatch(selectedBatchDetails.id)}
+                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded transition flex items-center border border-red-200"
+                      >
+                        <Unlock className="w-3.5 h-3.5 mr-1" /> Unfreeze & Recalculate
+                      </button>
+                    </div>
                   </div>
 
                   {/* Table details */}
