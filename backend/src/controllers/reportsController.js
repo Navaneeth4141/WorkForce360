@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import { generateExcelReport } from '../services/excelService.js';
-
-const prisma = new PrismaClient();
 
 /**
  * GET /api/reports/payroll

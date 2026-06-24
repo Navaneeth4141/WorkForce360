@@ -1,10 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import { calculateContractInvoice } from '../services/invoiceService.js';
 import { generateInvoicePdf } from '../services/pdfService.js';
-
-const prisma = new PrismaClient();
 
 const STORAGE_DIR = path.resolve('storage');
 const INVOICES_DIR = path.join(STORAGE_DIR, 'invoices');

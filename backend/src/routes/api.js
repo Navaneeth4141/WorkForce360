@@ -12,8 +12,7 @@ import { createExpense, getExpenses, getExpenseCategories, createExpenseCategory
 import { getPayrollReport, getAttendanceReport, getRevenueReport, getProfitReport } from '../controllers/reportsController.js';
 import { getSettings, updateSettings, resetDatabase } from '../controllers/settingsController.js';
 
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 
 const router = express.Router();
 

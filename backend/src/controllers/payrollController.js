@@ -1,10 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import { calculateEmployeePayroll } from '../services/payrollService.js';
 import { generatePayslipPdf } from '../services/pdfService.js';
-
-const prisma = new PrismaClient();
 
 // Ensure local storage directory exists for file uploads and generated PDFs
 const STORAGE_DIR = path.resolve('storage');
