@@ -40,7 +40,7 @@ export default function EmployeesPage() {
   const [editEmp, setEditEmp] = useState(null);
   const [editForm, setEditForm] = useState({
     fullName: '', phoneNumber: '', email: '', presentAddress: '', permanentAddress: '',
-    pfNumber: '', esicNumber: '', designationId: '', status: 'ACTIVE',
+    pfNumber: '', esicNumber: '', designationId: '', status: 'ACTIVE', religion: '',
     bankDetails: { bankName: '', accountHolderName: '', accountNumber: '', ifscCode: '', branchName: '' },
     fixedGross: '', teaAllowance: '500', fixedBasic: '', fixedHra: '', fixedConveyance: ''
   });
@@ -131,6 +131,7 @@ export default function EmployeesPage() {
       esicNumber: emp.esicNumber || '',
       designationId: emp.designationId,
       status: emp.status,
+      religion: emp.religion || '',
       bankDetails: {
         bankName: emp.bankDetails?.bankName || '',
         accountHolderName: emp.bankDetails?.accountHolderName || '',
@@ -149,6 +150,16 @@ export default function EmployeesPage() {
   // Submit edit form
   const handleUpdateEmployee = async (e) => {
     e.preventDefault();
+
+    if (!editForm.pfNumber || !editForm.pfNumber.trim()) {
+      alert('UAN Number (PF Number) is required');
+      return;
+    }
+
+    if (editForm.esicNumber !== 'N/A' && (!editForm.esicNumber || !editForm.esicNumber.trim())) {
+      alert('ESIC Insurance Number is required when eligible');
+      return;
+    }
 
     // Validate optional phone number and email formats if provided
     if (editForm.phoneNumber && editForm.phoneNumber.trim()) {
@@ -422,6 +433,8 @@ export default function EmployeesPage() {
                           <div className="flex justify-between"><span className="text-slate-500">Phone Number:</span><span className="font-medium">{empDetails.phoneNumber}</span></div>
                           <div className="flex justify-between"><span className="text-slate-500">Email Address:</span><span className="font-medium">{empDetails.email}</span></div>
                           <div className="flex justify-between"><span className="text-slate-500">Aadhaar Number:</span><span className="font-medium">{empDetails.aadharNumber}</span></div>
+                          <div className="flex justify-between"><span className="text-slate-500">UAN Number:</span><span className="font-medium">{empDetails.pfNumber || 'N/A'}</span></div>
+                          <div className="flex justify-between"><span className="text-slate-500">ESIC Number:</span><span className="font-medium">{empDetails.esicNumber || 'N/A'}</span></div>
                         </div>
                       </div>
 
@@ -658,6 +671,66 @@ export default function EmployeesPage() {
                         <option>TERMINATED</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Designation *</label>
+                      <select
+                        value={editForm.designationId}
+                        onChange={(e) => setEditForm({ ...editForm, designationId: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      >
+                        {designations.map((d) => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Religion (Optional)</label>
+                      <input
+                        type="text"
+                        value={editForm.religion}
+                        onChange={(e) => setEditForm({ ...editForm, religion: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">UAN Number *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editForm.pfNumber}
+                        onChange={(e) => setEditForm({ ...editForm, pfNumber: e.target.value })}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">ESIC Eligible? *</label>
+                      <select
+                        value={editForm.esicNumber === 'N/A' ? 'No' : 'Yes'}
+                        onChange={(e) => {
+                          const isEligible = e.target.value === 'Yes';
+                          setEditForm({
+                            ...editForm,
+                            esicNumber: isEligible ? '' : 'N/A'
+                          });
+                        }}
+                        className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                      >
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </div>
+                    {editForm.esicNumber !== 'N/A' && (
+                      <div className="col-span-2">
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">ESIC Insurance Number *</label>
+                        <input
+                          type="text"
+                          required
+                          value={editForm.esicNumber}
+                          onChange={(e) => setEditForm({ ...editForm, esicNumber: e.target.value })}
+                          className="block w-full border border-slate-200 rounded px-3 py-1.5 text-xs bg-slate-50 focus:outline-none"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 

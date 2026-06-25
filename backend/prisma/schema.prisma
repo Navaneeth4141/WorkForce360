@@ -81,7 +81,7 @@ model Employee {
   dob               DateTime?
   nationality       String
   gender            String
-  religion          String
+  religion          String?
   phoneNumber       String?           @map("phone_number")
   email             String?
   presentAddress    String?           @map("present_address")

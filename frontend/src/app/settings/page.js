@@ -25,6 +25,51 @@ export default function SettingsPage() {
   const [maximumOtHoursPerDay, setMaximumOtHoursPerDay] = useState('8.0');
   const [professionalTaxSlabs, setProfessionalTaxSlabs] = useState([]);
 
+  // Designations management states
+  const [designations, setDesignations] = useState([]);
+  const [newDesigName, setNewDesigName] = useState('');
+  const [newDesigDesc, setNewDesigDesc] = useState('');
+
+  const loadDesignations = async () => {
+    try {
+      const res = await API.get('/designations');
+      setDesignations(res.data);
+    } catch (err) {
+      console.error('Failed to load designations', err);
+    }
+  };
+
+  const handleAddDesignation = async (e) => {
+    e.preventDefault();
+    if (!newDesigName.trim()) return;
+    try {
+      setSuccessMsg('');
+      setErrorMsg('');
+      await API.post('/designations', { name: newDesigName, description: newDesigDesc });
+      setNewDesigName('');
+      setNewDesigDesc('');
+      setSuccessMsg('Designation added successfully!');
+      loadDesignations();
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.response?.data?.error?.message || 'Failed to add designation.');
+    }
+  };
+
+  const handleDeleteDesignation = async (id) => {
+    if (!confirm('Are you sure you want to remove this designation?')) return;
+    try {
+      setSuccessMsg('');
+      setErrorMsg('');
+      const res = await API.delete(`/designations/${id}`);
+      setSuccessMsg(res.data.message || 'Designation removed successfully.');
+      loadDesignations();
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.response?.data?.error?.message || 'Failed to remove designation.');
+    }
+  };
+
   const loadSettings = async () => {
     try {
       setLoading(true);
@@ -60,6 +105,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadSettings();
+    loadDesignations();
   }, []);
 
   // Professional Tax slabs helpers
@@ -249,6 +295,73 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* 4. Designation Management */}
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Manage Company Designations</h3>
+              </div>
+
+              {/* Add Designation Inline Form */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end bg-slate-50 p-3 rounded-lg border border-slate-150">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1">Designation Name *</label>
+                  <input
+                    type="text"
+                    value={newDesigName}
+                    onChange={(e) => setNewDesigName(e.target.value)}
+                    placeholder="e.g. Senior Developer"
+                    className="block w-full border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1">Description (Optional)</label>
+                  <input
+                    type="text"
+                    value={newDesigDesc}
+                    onChange={(e) => setNewDesigDesc(e.target.value)}
+                    placeholder="e.g. Directs technical delivery"
+                    className="block w-full border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleAddDesignation}
+                    className="dashboard-btn-primary w-full py-1.5 text-xs flex justify-center items-center"
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Designation
+                  </button>
+                </div>
+              </div>
+
+              {/* List of active Designations */}
+              <div className="space-y-2 mt-3">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Designations</h4>
+                {designations.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No designations found.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {designations.map((d) => (
+                      <div key={d.id} className="flex items-center justify-between bg-slate-50 rounded border border-slate-200 p-2.5">
+                        <div className="min-w-0 flex-1 pr-2">
+                          <p className="text-xs font-bold text-slate-700 truncate">{d.name}</p>
+                          {d.description && <p className="text-[10px] text-slate-500 truncate">{d.description}</p>}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDesignation(d.id)}
+                          className="text-red-500 hover:text-red-700 shrink-0 p-1 rounded hover:bg-slate-100 transition-colors"
+                          title="Remove Designation"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

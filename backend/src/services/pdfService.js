@@ -50,7 +50,7 @@ export function generatePayslipPdf({ payrollItem, employee, designation, setting
       doc.text('Payable Days:', 330, gridTop + 15);
       doc.text('Absent Days:', 330, gridTop + 30);
       doc.text('Overtime Hours:', 330, gridTop + 45);
-      doc.text('PF Number:', 330, gridTop + 60);
+      doc.text('UAN Number:', 330, gridTop + 60);
 
       doc.font('Helvetica');
       doc.text(new Date(employee.joiningDate).toLocaleDateString(), 430, gridTop);

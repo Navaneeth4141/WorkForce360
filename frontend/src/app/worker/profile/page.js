@@ -210,7 +210,7 @@ export default function WorkerProfile() {
                     <p className="font-semibold text-slate-700 mt-0.5">{profile?.aadharNumber || 'N/A'}</p>
                   </div>
                   <div className="border-b border-slate-100 pb-2">
-                    <span className="text-xs text-slate-400 font-medium">Provident Fund (PF) No.</span>
+                    <span className="text-xs text-slate-400 font-medium">UAN Number</span>
                     <p className="font-semibold text-slate-700 mt-0.5">{profile?.pfNumber || 'Not Enrolled'}</p>
                   </div>
                   <div className="border-b border-slate-100 pb-2">

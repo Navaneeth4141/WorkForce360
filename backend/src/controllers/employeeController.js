@@ -40,6 +40,10 @@ export async function createEmployee(req, res) {
     return res.status(400).json({ error: { message: 'Missing required employee personal information' } });
   }
 
+  if (!pfNumber || !pfNumber.trim()) {
+    return res.status(400).json({ error: { message: 'UAN Number (PF Number) is required' } });
+  }
+
   // Validate salary components if provided
   if (fixedGross !== undefined && fixedGross !== null) {
     const gross = parseFloat(fixedGross || 0);
@@ -312,6 +316,10 @@ export async function updateEmployee(req, res) {
     designationId, status, bankDetails,
     fixedGross, teaAllowance, fixedBasic, fixedHra, fixedConveyance,
   } = req.body;
+
+  if (pfNumber !== undefined && (!pfNumber || !pfNumber.trim())) {
+    return res.status(400).json({ error: { message: 'UAN Number (PF Number) is required' } });
+  }
 
   // Validate salary components if provided
   if (fixedGross !== undefined && fixedGross !== null) {

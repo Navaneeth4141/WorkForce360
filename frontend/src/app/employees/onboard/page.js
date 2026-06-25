@@ -28,8 +28,20 @@ export default function OnboardPage() {
   const [personal, setPersonal] = useState({
     fullName: '', age: '', dob: '', nationality: 'Indian', gender: 'Male', religion: '',
     phoneNumber: '', email: '', presentAddress: '', permanentAddress: '',
-    aadharNumber: '', pfNumber: '', esicNumber: '', joiningDate: '', designationId: ''
+    aadharNumber: '', pfNumber: '', esicNumber: 'N/A', joiningDate: '', designationId: ''
   });
+
+  const [esicEligible, setEsicEligible] = useState('No');
+
+  const handleEsicEligibleChange = (e) => {
+    const val = e.target.value;
+    setEsicEligible(val);
+    if (val === 'No') {
+      setPersonal(prev => ({ ...prev, esicNumber: 'N/A' }));
+    } else {
+      setPersonal(prev => ({ ...prev, esicNumber: '' }));
+    }
+  };
 
   const [family, setFamily] = useState([]); // list of { relationship, fullName, occupation, dob, contactNumber }
   const [education, setEducation] = useState([]); // list of { qualification, institution, specialization, completionYear, score, scoreType }
@@ -72,9 +84,7 @@ export default function OnboardPage() {
       if (!personal.fullName.trim()) {
         errors.fullName = 'Full Name is required';
       }
-      if (!personal.age || parseInt(personal.age) <= 0) {
-        errors.age = 'Valid positive age is required';
-      }
+      // age is calculated automatically from Date of Birth
       if (!personal.designationId) {
         errors.designationId = 'Designation is required';
       }
@@ -84,9 +94,7 @@ export default function OnboardPage() {
       if (!personal.nationality.trim()) {
         errors.nationality = 'Nationality is required';
       }
-      if (!personal.religion.trim()) {
-        errors.religion = 'Religion is required';
-      }
+      // religion is optional
       if (personal.phoneNumber && personal.phoneNumber.trim()) {
         if (!/^\d{10}$/.test(personal.phoneNumber.trim())) {
           errors.phoneNumber = 'Phone number must be exactly 10 digits';
@@ -106,10 +114,12 @@ export default function OnboardPage() {
         }
       }
       if (!personal.pfNumber || !personal.pfNumber.trim()) {
-        errors.pfNumber = 'PF Account Number is required';
+        errors.pfNumber = 'UAN Number is required';
       }
-      if (!personal.esicNumber || !personal.esicNumber.trim()) {
-        errors.esicNumber = 'ESIC Insurance Number is required';
+      if (esicEligible === 'Yes') {
+        if (!personal.esicNumber || !personal.esicNumber.trim() || personal.esicNumber === 'N/A') {
+          errors.esicNumber = 'ESIC Insurance Number is required';
+        }
       }
     } else if (step === 5) {
       if (!salary.fixedGross || parseFloat(salary.fixedGross) <= 0) {
@@ -319,8 +329,9 @@ export default function OnboardPage() {
                   setPersonal({
                     fullName: '', age: '', dob: '', nationality: 'Indian', gender: 'Male', religion: '',
                     phoneNumber: '', email: '', presentAddress: '', permanentAddress: '',
-                    aadharNumber: '', pfNumber: '', esicNumber: '', joiningDate: '', designationId: designations[0]?.id || ''
+                    aadharNumber: '', pfNumber: '', esicNumber: 'N/A', joiningDate: '', designationId: designations[0]?.id || ''
                   });
+                  setEsicEligible('No');
                   setFamily([]);
                   setEducation([]);
                   setHistory([]);
@@ -358,15 +369,16 @@ export default function OnboardPage() {
                     {formErrors.fullName && <p className="text-red-500 text-xs mt-1">{formErrors.fullName}</p>}
                   </div>
 
+                  {/* Age is computed dynamically from Date of Birth */}
+
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Age *</label>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Religion (Optional)</label>
                     <input
-                      type="number"
-                      value={personal.age}
-                      onChange={(e) => setPersonal({ ...personal, age: e.target.value })}
+                      type="text"
+                      value={personal.religion}
+                      onChange={(e) => setPersonal({ ...personal, religion: e.target.value })}
                       className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none"
                     />
-                    {formErrors.age && <p className="text-red-500 text-xs mt-1">{formErrors.age}</p>}
                   </div>
  
                    <div>
@@ -374,7 +386,21 @@ export default function OnboardPage() {
                      <input
                        type="date"
                        value={personal.dob}
-                       onChange={(e) => setPersonal({ ...personal, dob: e.target.value })}
+                       onChange={(e) => {
+                         const dobVal = e.target.value;
+                         let computedAge = 0;
+                         if (dobVal) {
+                           const today = new Date();
+                           const birthDate = new Date(dobVal);
+                           computedAge = today.getFullYear() - birthDate.getFullYear();
+                           const m = today.getMonth() - birthDate.getMonth();
+                           if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                             computedAge--;
+                           }
+                           if (computedAge < 0) computedAge = 0;
+                         }
+                         setPersonal({ ...personal, dob: dobVal, age: computedAge });
+                       }}
                        className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none"
                      />
                      {formErrors.dob && <p className="text-red-500 text-xs mt-1">{formErrors.dob}</p>}
@@ -417,17 +443,6 @@ export default function OnboardPage() {
                        className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none"
                      />
                      {formErrors.nationality && <p className="text-red-500 text-xs mt-1">{formErrors.nationality}</p>}
-                   </div>
- 
-                   <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">Religion *</label>
-                     <input
-                       type="text"
-                       value={personal.religion}
-                       onChange={(e) => setPersonal({ ...personal, religion: e.target.value })}
-                       className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none"
-                     />
-                     {formErrors.religion && <p className="text-red-500 text-xs mt-1">{formErrors.religion}</p>}
                    </div>
  
                    <div>
@@ -475,7 +490,7 @@ export default function OnboardPage() {
                    </div>
  
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">PF Account Number *</label>
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">UAN Number *</label>
                      <input
                        type="text"
                        value={personal.pfNumber}
@@ -484,17 +499,31 @@ export default function OnboardPage() {
                      />
                      {formErrors.pfNumber && <p className="text-red-500 text-xs mt-1">{formErrors.pfNumber}</p>}
                    </div>
- 
+
                    <div>
-                     <label className="block text-xs font-semibold text-slate-600 mb-1">ESIC Insurance Number *</label>
-                     <input
-                       type="text"
-                       value={personal.esicNumber}
-                       onChange={(e) => setPersonal({ ...personal, esicNumber: e.target.value })}
+                     <label className="block text-xs font-semibold text-slate-600 mb-1">ESIC Eligible? *</label>
+                     <select
+                       value={esicEligible}
+                       onChange={handleEsicEligibleChange}
                        className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none"
-                     />
-                     {formErrors.esicNumber && <p className="text-red-500 text-xs mt-1">{formErrors.esicNumber}</p>}
+                     >
+                       <option value="No">No</option>
+                       <option value="Yes">Yes</option>
+                     </select>
                    </div>
+
+                   {esicEligible === 'Yes' && (
+                     <div>
+                       <label className="block text-xs font-semibold text-slate-600 mb-1">ESIC Insurance Number *</label>
+                       <input
+                         type="text"
+                         value={personal.esicNumber === 'N/A' ? '' : personal.esicNumber}
+                         onChange={(e) => setPersonal({ ...personal, esicNumber: e.target.value })}
+                         className="block w-full border border-slate-200 rounded px-3 py-2 text-sm bg-slate-50 focus:outline-none"
+                       />
+                       {formErrors.esicNumber && <p className="text-red-500 text-xs mt-1">{formErrors.esicNumber}</p>}
+                     </div>
+                   )}
                  </div>
  
                  <div className="grid grid-cols-1 gap-4 mt-4">

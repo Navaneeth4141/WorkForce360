@@ -48,6 +48,76 @@ router.get('/designations', authenticateToken, async (req, res) => {
   }
 });
 
+router.post('/designations', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+  const { name, description } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: { message: 'Designation name is required' } });
+  }
+  try {
+    const existing = await prisma.designation.findFirst({
+      where: { name: name.trim(), isActive: true }
+    });
+    if (existing) {
+      return res.status(400).json({ error: { message: 'Designation already exists' } });
+    }
+
+    const inactive = await prisma.designation.findFirst({
+      where: { name: name.trim(), isActive: false }
+    });
+
+    let designation;
+    if (inactive) {
+      designation = await prisma.designation.update({
+        where: { id: inactive.id },
+        data: { isActive: true, description: description || inactive.description }
+      });
+    } else {
+      designation = await prisma.designation.create({
+        data: {
+          name: name.trim(),
+          description: description || null,
+          isActive: true,
+          createdBy: req.user?.id || null
+        }
+      });
+    }
+    res.json(designation);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: { message: 'Failed to create designation' } });
+  }
+});
+
+router.delete('/designations/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const designation = await prisma.designation.findUnique({
+      where: { id },
+      include: { employees: true }
+    });
+    if (!designation) {
+      return res.status(404).json({ error: { message: 'Designation not found' } });
+    }
+
+    const hasEmployees = designation.employees.length > 0;
+    if (hasEmployees) {
+      const updated = await prisma.designation.update({
+        where: { id },
+        data: { isActive: false }
+      });
+      res.json({ message: 'Designation deactivated successfully because it is linked to employees', designation: updated });
+    } else {
+      await prisma.designation.delete({
+        where: { id }
+      });
+      res.json({ message: 'Designation deleted successfully', designation });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: { message: 'Failed to delete designation' } });
+  }
+});
+
 // ==========================================
 // 3. Attendance APIs
 // ==========================================
